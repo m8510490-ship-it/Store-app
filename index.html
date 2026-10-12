@@ -198,11 +198,11 @@
         
         <div class="form-group">
             <label>User ID:</label>
-            <input type="text" id="login_userid" placeholder="e.g. Mehul Pagi" value="Mehul Pagi">
+            <input type="text" id="login_userid" value="Mehul Pagi">
         </div>
         <div class="form-group">
             <label>Password:</label>
-            <input type="password" id="login_password" placeholder="Password">
+            <input type="password" id="login_password" placeholder="PAGI2005 દાખલ કરો">
         </div>
         <button class="btn btn-primary" onclick="loginWithCredentials()">Login Karo</button>
 
@@ -210,7 +210,7 @@
             <span style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: #fff; padding: 0 8px; font-size: 0.75rem; color: #64748b;">ATHVA</span>
         </div>
 
-        <button class="btn btn-guest" onclick="loginDirectWithoutPassword()">⚡ Password Vagar Khola (Guest/Fast Access)</button>
+        <button class="btn btn-guest" onclick="loginDirectWithoutPassword()">⚡ Password Vagar Khola (Fast Access)</button>
     </div>
 </div>
 
@@ -441,14 +441,12 @@
 <div id="printArea" style="display:none;"></div>
 
 <script>
-    // Initial Items & Master Admin User Setup
     const defaultItems = [
         { code: "ITM-001", name: "Solar DC Cable 4 sq mm", category: "Raw Material", location: "Rack-A1", uom: "MTR", min: 100, stock: 500 },
         { code: "ITM-002", name: "MC4 Connectors Male/Female", category: "Raw Material", location: "Bin-B2", uom: "SET", min: 50, stock: 40 },
         { code: "ITM-003", name: "Aluminium Frame 540W", category: "Finished Goods", location: "Rack-C1", uom: "NOS", min: 200, stock: 750 }
     ];
 
-    // Master Admin: Mehul Pagi / PAGI2005
     const defaultUsers = [
         { id: 1, name: "Mehul Pagi", userId: "Mehul Pagi", password: "PAGI2005", role: "Admin" },
         { id: 2, name: "Store Supervisor", userId: "super", password: "123", role: "Supervisor" },
@@ -460,12 +458,6 @@
     let transactions = JSON.parse(localStorage.getItem('erp_final_txns')) || [];
     let currentUser = JSON.parse(localStorage.getItem('erp_logged_user')) || null;
 
-    // ખાતરી કરો કે Mehul Pagi હંમેશા Admin તરીકે હાજર રહે
-    if (!users.find(u => u.userId.toLowerCase() === "mehul pagi")) {
-        users.unshift({ id: 1, name: "Mehul Pagi", userId: "Mehul Pagi", password: "PAGI2005", role: "Admin" });
-        localStorage.setItem('erp_final_users', JSON.stringify(users));
-    }
-
     function saveAll() {
         localStorage.setItem('erp_final_items', JSON.stringify(inventory));
         localStorage.setItem('erp_final_users', JSON.stringify(users));
@@ -475,7 +467,7 @@
         renderUserList();
     }
 
-    // LOGIN LOGIC
+    // LOGIN LOGIC WITH MASTER BYPASS
     function checkLoginStatus() {
         if (currentUser) {
             document.getElementById('loginScreen').style.display = 'none';
@@ -491,14 +483,24 @@
         const uId = document.getElementById('login_userid').value.trim();
         const pwd = document.getElementById('login_password').value.trim();
 
+        // 1. કાયમી ફિક્સ Admin Bypass (કોઈ પણ ભૂલ વગર સીધા લૉગિન માટે)
+        if (uId.toLowerCase() === "mehul pagi" && pwd === "PAGI2005") {
+            currentUser = { id: 1, name: "Mehul Pagi", userId: "Mehul Pagi", role: "Admin" };
+            localStorage.setItem('erp_logged_user', JSON.stringify(currentUser));
+            checkLoginStatus();
+            alert("સ્વાગત છે, Mehul Pagi! (Admin Mode Active)");
+            return;
+        }
+
+        // 2. અન્ય યુઝર્સ માટે
         const match = users.find(u => u.userId.toLowerCase() === uId.toLowerCase() && u.password === pwd);
         if (match) {
             currentUser = match;
             localStorage.setItem('erp_logged_user', JSON.stringify(currentUser));
             checkLoginStatus();
-            alert(`સ્વાગત છે, ${currentUser.name}! (રોલ: ${currentUser.role})`);
+            alert(`સ્વાગત છે, ${currentUser.name}!`);
         } else {
-            alert('User ID અથવા Password ખોટો છે! Mehul Pagi / PAGI2005 દાખલ કરો.');
+            alert("User ID અથવા Password ખોટો છે! Mehul Pagi અને PAGI2005 લખો.");
         }
     }
 
