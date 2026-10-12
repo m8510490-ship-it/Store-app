@@ -21,7 +21,30 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { background-color: var(--bg-main); color: var(--text-main); padding-bottom: 40px; }
 
-        /* Top Header */
+        /* Login Screen Overlay */
+        #loginScreen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 16px;
+        }
+        .login-box {
+            background: #ffffff;
+            width: 100%;
+            max-width: 380px;
+            padding: 24px;
+            border-radius: 14px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+        .login-box h2 { color: var(--primary); margin-bottom: 6px; font-size: 1.3rem; }
+        .login-box p { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 18px; }
+
+        /* Header */
         header { 
             background: linear-gradient(135deg, var(--primary), #1e293b); 
             color: #ffffff; 
@@ -31,9 +54,9 @@
             align-items: center;
             box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
         }
-        .brand-title { font-size: 1.15rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+        .brand-title { font-size: 1.15rem; font-weight: 700; }
 
-        /* User Profile Ribbon */
+        /* Ribbon */
         .user-ribbon {
             background: #ffffff;
             border-bottom: 1px solid var(--border-color);
@@ -46,13 +69,13 @@
         .role-pill { 
             background: #eff6ff; 
             color: var(--primary-accent); 
-            padding: 4px 10px; 
+            padding: 3px 8px; 
             border-radius: 999px; 
             font-weight: 600; 
             border: 1px solid #bfdbfe;
         }
 
-        /* Navigation Scroll Bar */
+        /* Nav Tabs */
         .nav-tabs { 
             display: flex; 
             overflow-x: auto; 
@@ -75,7 +98,6 @@
             color: var(--text-muted); 
             border-bottom: 3px solid transparent; 
             white-space: nowrap; 
-            transition: all 0.2s ease;
         }
         .tab-btn.active { 
             color: var(--primary-accent); 
@@ -83,7 +105,6 @@
             background: #f8fafc; 
         }
 
-        /* Main Container */
         .container { padding: 16px; max-width: 850px; margin: auto; }
         .card { 
             background: var(--card-bg); 
@@ -103,25 +124,20 @@
             align-items: center; 
         }
 
-        /* Forms & Inputs */
-        .form-group { margin-bottom: 12px; }
-        label { display: block; margin-bottom: 5px; font-size: 0.82rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .form-group { margin-bottom: 12px; text-align: left; }
+        label { display: block; margin-bottom: 5px; font-size: 0.82rem; font-weight: 600; color: var(--text-muted); }
         input, select { 
             width: 100%; 
             padding: 11px 13px; 
             border: 1px solid var(--border-color); 
             border-radius: 8px; 
             font-size: 0.95rem; 
-            background: #ffffff;
-            transition: border 0.2s ease;
         }
         input:focus, select:focus {
             outline: none;
             border-color: var(--primary-accent);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
 
-        /* Buttons */
         .btn { 
             width: 100%; 
             padding: 12px; 
@@ -131,29 +147,23 @@
             font-weight: 600; 
             cursor: pointer; 
             margin-top: 6px; 
-            transition: all 0.2s ease;
         }
         .btn-primary { background: var(--primary-accent); color: #ffffff; }
         .btn-success { background: var(--success); color: #ffffff; }
         .btn-danger { background: var(--danger); color: #ffffff; }
         .btn-warning { background: var(--warning); color: #ffffff; }
         .btn-backup { background: #334155; color: #ffffff; }
-        .btn:active { transform: scale(0.99); opacity: 0.9; }
+        .btn-guest { background: #e2e8f0; color: var(--text-main); margin-top: 10px; }
 
         .btn-header {
-            padding: 7px 12px;
+            padding: 6px 12px;
             font-size: 0.8rem;
             font-weight: 600;
             border-radius: 6px;
             border: none;
             cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
         }
-        .btn-csv { background: #059669; color: #ffffff; }
 
-        /* Item Rows */
         .data-row { 
             padding: 12px; 
             border-bottom: 1px solid var(--border-color); 
@@ -161,7 +171,6 @@
             justify-content: space-between; 
             align-items: center; 
         }
-        .data-row:last-child { border-bottom: none; }
         .alert-badge { 
             background: #fee2e2; 
             color: #b91c1c; 
@@ -169,13 +178,6 @@
             padding: 2px 7px; 
             border-radius: 4px; 
             font-weight: 700; 
-        }
-        .badge-cat {
-            background: #f1f5f9;
-            color: var(--text-muted);
-            font-size: 0.75rem;
-            padding: 2px 6px;
-            border-radius: 4px;
         }
 
         .tab-content { display: none; }
@@ -190,19 +192,45 @@
 </head>
 <body>
 
+<!-- LOGIN MODAL SCREEN -->
+<div id="loginScreen">
+    <div class="login-box">
+        <h2>📦 Store ERP Login</h2>
+        <p>Potano User ID ane Password nakho athva Direct Entry karo</p>
+        
+        <div class="form-group">
+            <label>User ID (Username):</label>
+            <input type="text" id="login_userid" placeholder="e.g. admin">
+        </div>
+        <div class="form-group">
+            <label>Password:</label>
+            <input type="password" id="login_password" placeholder="Password">
+        </div>
+        <button class="btn btn-primary" onclick="loginWithCredentials()">Login Karo</button>
+
+        <div style="margin: 15px 0 10px; border-top: 1px solid #e2e8f0; position: relative;">
+            <span style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: #fff; padding: 0 8px; font-size: 0.75rem; color: #64748b;">ATHVA</span>
+        </div>
+
+        <button class="btn btn-guest" onclick="loginDirectWithoutPassword()">⚡ Password Vagar Khola (Fast Access)</button>
+    </div>
+</div>
+
+<!-- MAIN APPLICATION -->
 <header>
     <div class="brand-title">📦 Store ERP System</div>
     <div style="display: flex; gap: 8px;">
-        <button onclick="exportToCSV()" class="btn-header btn-csv">📥 CSV Report</button>
+        <button onclick="exportToCSV()" class="btn-header" style="background:#059669; color:#fff;">📥 CSV</button>
+        <button onclick="logoutUser()" class="btn-header" style="background:#dc2626; color:#fff;">Logout</button>
     </div>
 </header>
 
 <div class="user-ribbon">
-    <div>User: <strong id="lblCurUser">Admin User</strong> | <span class="role-pill" id="lblCurRole">Admin</span></div>
-    <select id="userSelector" onchange="switchCurrentUser()" style="width:auto; padding:4px 8px; font-size:0.8rem; border-radius:6px;"></select>
+    <div>User: <strong id="lblCurUser">Guest</strong> | <span class="role-pill" id="lblCurRole">Operator</span></div>
+    <div style="font-size:0.75rem; color:var(--text-muted);" id="lblCurId">ID: guest</div>
 </div>
 
-<!-- All Navigation Tabs -->
+<!-- Tabs List -->
 <div class="nav-tabs">
     <button class="tab-btn active" onclick="switchTab('stock_master')">📊 Stock Master</button>
     <button class="tab-btn" onclick="switchTab('item_master')">⚙️ Item Master</button>
@@ -360,33 +388,38 @@
         </div>
     </div>
 
-    <!-- 6. DATA BACKUP & SAVE MANAGER -->
+    <!-- 6. BACKUP & RESTORE -->
     <div id="tab-backup_manager" class="tab-content">
         <div class="card">
             <div class="card-title">💾 Permanent Data Backup (Save File)</div>
             <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:14px;">
-                Tame tamara badha stock, items, users ane transactions no backup download kari shako chho. Browser clean thay to pan data safe rahese.
+                Tamaro data safe rakhva mate backup file download kari lo:
             </p>
             <button class="btn btn-backup" onclick="downloadJSONBackup()">📥 Download Store Backup File (.json)</button>
         </div>
 
         <div class="card">
             <div class="card-title">📂 Restore / Load Backup File</div>
-            <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:14px;">
-                Pahela save kareli backup file (.json) select kari ne ahiya restore karo:
-            </p>
             <input type="file" id="backupFileInput" accept=".json" style="margin-bottom:10px;">
             <button class="btn btn-primary" onclick="restoreJSONBackup()">📤 Upload & Restore Data</button>
         </div>
     </div>
 
-    <!-- 7. USER MASTER (20+ Users) -->
+    <!-- 7. USER MASTER WITH PASSWORDS (20+ Users) -->
     <div id="tab-user_master" class="tab-content">
         <div class="card">
-            <div class="card-title">👥 Register New User (20+ Supported)</div>
+            <div class="card-title">👥 Register New User (ID & Password Setup)</div>
             <div class="form-group">
-                <label>User Name:</label>
+                <label>Full Name:</label>
                 <input type="text" id="u_name" placeholder="e.g. Mehul Pagi">
+            </div>
+            <div class="form-group">
+                <label>User ID (Login ID):</label>
+                <input type="text" id="u_loginid" placeholder="e.g. mehul01">
+            </div>
+            <div class="form-group">
+                <label>Password:</label>
+                <input type="password" id="u_password" placeholder="Password set karo">
             </div>
             <div class="form-group">
                 <label>User Role:</label>
@@ -396,11 +429,7 @@
                     <option value="Admin">Admin (Full Access & Masters)</option>
                 </select>
             </div>
-            <div class="form-group">
-                <label>Employee ID / Mobile:</label>
-                <input type="text" id="u_empid" placeholder="e.g. EMP-101">
-            </div>
-            <button class="btn btn-primary" onclick="saveUserMaster()">Register User</button>
+            <button class="btn btn-primary" onclick="saveUserMaster()">Save User With Password</button>
         </div>
 
         <div class="card">
@@ -411,11 +440,10 @@
 
 </div>
 
-<!-- Printable Slip -->
 <div id="printArea" style="display:none;"></div>
 
 <script>
-    // Initial Stock & Users Dataset
+    // Default Items & Users
     const defaultItems = [
         { code: "ITM-001", name: "Solar DC Cable 4 sq mm", category: "Raw Material", location: "Rack-A1", uom: "MTR", min: 100, stock: 500 },
         { code: "ITM-002", name: "MC4 Connectors Male/Female", category: "Raw Material", location: "Bin-B2", uom: "SET", min: 50, stock: 40 },
@@ -423,16 +451,15 @@
     ];
 
     const defaultUsers = [
-        { id: 1, name: "Mehul Pagi", role: "Admin", empId: "EMP-001" },
-        { id: 2, name: "Store Supervisor", role: "Supervisor", empId: "EMP-002" },
-        { id: 3, name: "Store Operator", role: "Operator", empId: "EMP-003" }
+        { id: 1, name: "Admin Mehul", userId: "admin", password: "123", role: "Admin" },
+        { id: 2, name: "Store Supervisor", userId: "super", password: "123", role: "Supervisor" },
+        { id: 3, name: "Store Operator", userId: "oper", password: "123", role: "Operator" }
     ];
 
-    // Local Storage persistent keys
     let inventory = JSON.parse(localStorage.getItem('erp_final_items')) || defaultItems;
     let users = JSON.parse(localStorage.getItem('erp_final_users')) || defaultUsers;
     let transactions = JSON.parse(localStorage.getItem('erp_final_txns')) || [];
-    let currentUser = users[0];
+    let currentUser = JSON.parse(localStorage.getItem('erp_logged_user')) || null;
 
     function saveAll() {
         localStorage.setItem('erp_final_items', JSON.stringify(inventory));
@@ -441,6 +468,47 @@
         renderStockMaster();
         renderItemMasterList();
         renderUserList();
+    }
+
+    // LOGIN LOGIC
+    function checkLoginStatus() {
+        if (currentUser) {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('lblCurUser').innerText = currentUser.name;
+            document.getElementById('lblCurRole').innerText = currentUser.role;
+            document.getElementById('lblCurId').innerText = "ID: " + (currentUser.userId || "guest");
+        } else {
+            document.getElementById('loginScreen').style.display = 'flex';
+        }
+    }
+
+    function loginWithCredentials() {
+        const uId = document.getElementById('login_userid').value.trim().toLowerCase();
+        const pwd = document.getElementById('login_password').value.trim();
+
+        const match = users.find(u => u.userId.toLowerCase() === uId && u.password === pwd);
+        if (match) {
+            currentUser = match;
+            localStorage.setItem('erp_logged_user', JSON.stringify(currentUser));
+            checkLoginStatus();
+            alert(`Swagat chhe, ${currentUser.name}!`);
+        } else {
+            alert('User ID athva Password khoto chhe! (Default: admin / 123)');
+        }
+    }
+
+    function loginDirectWithoutPassword() {
+        currentUser = { id: 999, name: "Direct Guest User", userId: "guest", role: "Operator" };
+        localStorage.setItem('erp_logged_user', JSON.stringify(currentUser));
+        checkLoginStatus();
+    }
+
+    function logoutUser() {
+        currentUser = null;
+        localStorage.removeItem('erp_logged_user');
+        document.getElementById('login_userid').value = '';
+        document.getElementById('login_password').value = '';
+        checkLoginStatus();
     }
 
     function switchTab(id) {
@@ -453,33 +521,23 @@
         if (id === 'user_master') renderUserList();
     }
 
-    // USER MASTER FUNCTIONS
-    function initUserSelector() {
-        const sel = document.getElementById('userSelector');
-        sel.innerHTML = users.map(u => `<option value="${u.id}">${u.name} (${u.role})</option>`).join('');
-        sel.value = currentUser.id;
-    }
-
-    function switchCurrentUser() {
-        const id = parseInt(document.getElementById('userSelector').value);
-        currentUser = users.find(u => u.id === id) || users[0];
-        document.getElementById('lblCurUser').innerText = currentUser.name;
-        document.getElementById('lblCurRole').innerText = currentUser.role;
-    }
-
+    // USER MASTER
     function saveUserMaster() {
-        if (currentUser.role !== 'Admin') return alert('Fakt Admin j nava user add kari shake!');
+        if (!currentUser || currentUser.role !== 'Admin') return alert('Fakt Admin j nava user add kari shake!');
         const name = document.getElementById('u_name').value.trim();
+        const uId = document.getElementById('u_loginid').value.trim().toLowerCase();
+        const pwd = document.getElementById('u_password').value.trim();
         const role = document.getElementById('u_role').value;
-        const empId = document.getElementById('u_empid').value.trim();
 
-        if (!name) return alert('User name jaruri chhe!');
-        users.push({ id: Date.now(), name, role, empId });
+        if (!name || !uId || !pwd) return alert('Name, User ID ane Password badhu jaruri chhe!');
+        if (users.find(u => u.userId.toLowerCase() === uId)) return alert('Aa User ID pahelathi che!');
+
+        users.push({ id: Date.now(), name, userId: uId, password: pwd, role });
         saveAll();
-        initUserSelector();
         alert('Navo user successfully add thayo!');
         document.getElementById('u_name').value = '';
-        document.getElementById('u_empid').value = '';
+        document.getElementById('u_loginid').value = '';
+        document.getElementById('u_password').value = '';
     }
 
     function renderUserList() {
@@ -491,10 +549,10 @@
                 <div class="data-row">
                     <div>
                         <strong>${u.name}</strong> <span class="role-pill">${u.role}</span><br>
-                        <small style="color:var(--text-muted);">Emp ID: ${u.empId || 'N/A'}</small>
+                        <small style="color:var(--text-muted);">ID: <b>${u.userId}</b> | Pwd: ***</small>
                     </div>
                     <div>
-                        ${u.id !== 1 ? `<button onclick="deleteUser(${u.id})" style="color:red; background:none; border:none; font-weight:bold; cursor:pointer;">Delete</button>` : '<small style="color:gray;">Primary</small>'}
+                        ${u.id !== 1 ? `<button onclick="deleteUser(${u.id})" style="color:red; background:none; border:none; font-weight:bold; cursor:pointer;">Delete</button>` : '<small style="color:gray;">Admin</small>'}
                     </div>
                 </div>
             `;
@@ -503,11 +561,10 @@
     }
 
     function deleteUser(id) {
-        if (currentUser.role !== 'Admin') return alert('Fakt Admin user delete kari shake!');
+        if (!currentUser || currentUser.role !== 'Admin') return alert('Fakt Admin user delete kari shake!');
         if (confirm('A user ne delete karvo chhe?')) {
             users = users.filter(u => u.id !== id);
             saveAll();
-            initUserSelector();
         }
     }
 
@@ -529,7 +586,6 @@
         });
 
         document.getElementById('stockCount').innerText = `${filtered.length} Items`;
-
         if (filtered.length === 0) {
             container.innerHTML = '<p style="text-align:center; color:var(--text-muted); padding:20px;">No stock found.</p>';
             return;
@@ -542,7 +598,7 @@
                 <div class="data-row">
                     <div>
                         <strong>${item.name}</strong> (${item.code})<br>
-                        <small style="color:var(--text-muted);">📍 Loc: <b>${item.location || 'N/A'}</b> | Min: ${item.min} ${item.uom} | <span class="badge-cat">${item.category || '-'}</span></small>
+                        <small style="color:var(--text-muted);">📍 Loc: <b>${item.location || 'N/A'}</b> | Min: ${item.min} ${item.uom}</small>
                         ${isLow ? '<br><span class="alert-badge">⚠️ Low Stock Alert</span>' : ''}
                     </div>
                     <div style="font-size:1.15rem; font-weight:bold; color:${isLow ? '#ef4444' : '#10b981'}; text-align:right;">
@@ -556,7 +612,7 @@
 
     // ITEM MASTER
     function saveItemMaster() {
-        if (currentUser.role === 'Operator') return alert('Operator Item Master add kari shakto nathi!');
+        if (!currentUser || currentUser.role === 'Operator') return alert('Operator Item Master add kari shakto nathi!');
         const code = document.getElementById('im_code').value.trim();
         const name = document.getElementById('im_name').value.trim();
         const cat = document.getElementById('im_cat').value;
@@ -587,7 +643,7 @@
                         <small style="color:var(--text-muted);">${item.category} | ${item.location || 'N/A'} | ${item.uom}</small>
                     </div>
                     <div>
-                        ${currentUser.role === 'Admin' ? `<button onclick="deleteItemMaster(${index})" style="color:red; background:none; border:none; font-weight:bold; cursor:pointer;">Delete</button>` : ''}
+                        ${currentUser && currentUser.role === 'Admin' ? `<button onclick="deleteItemMaster(${index})" style="color:red; background:none; border:none; font-weight:bold; cursor:pointer;">Delete</button>` : ''}
                     </div>
                 </div>
             `;
@@ -596,7 +652,7 @@
     }
 
     function deleteItemMaster(idx) {
-        if (confirm(`Aa item "${inventory[idx].name}" master mathi delete karvi chhe?`)) {
+        if (confirm(`Aa item delete karvi chhe?`)) {
             inventory.splice(idx, 1);
             saveAll();
         }
@@ -621,13 +677,13 @@
 
         if (!code || isNaN(qty) || qty <= 0) return alert('Valid Code ane Quantity nakho!');
         const item = inventory.find(i => i.code.toLowerCase() === code.toLowerCase());
-        if (!item) return alert('Item Item Master ma nathi! Pahela Item Master ma add karo.');
+        if (!item) return alert('Item Item Master ma nathi! Pahela add karo.');
 
         if (!isIN && item.stock < qty) return alert(`Stock ochho chhe! Current Stock: ${item.stock}`);
 
         item.stock = isIN ? (item.stock + qty) : (item.stock - qty);
         const docNo = (isIN ? 'GRN-' : 'ISS-') + Math.floor(1000 + Math.random() * 9000);
-        const rec = { docNo, date: new Date().toLocaleString(), type, code: item.code, name: item.name, qty, ref, party, user: currentUser.name };
+        const rec = { docNo, date: new Date().toLocaleString(), type, code: item.code, name: item.name, qty, ref, party, user: currentUser ? currentUser.name : 'Unknown' };
         transactions.push(rec);
         saveAll();
 
@@ -677,7 +733,7 @@
     }
 
     function applyAudit() {
-        if (currentUser.role === 'Operator') return alert('Fakt Supervisor ke Admin audit kari shake!');
+        if (!currentUser || currentUser.role === 'Operator') return alert('Fakt Supervisor ke Admin audit kari shake!');
         const code = document.getElementById('aud_code').value.trim();
         const actual = parseFloat(document.getElementById('aud_actual_qty').value);
         const remark = document.getElementById('aud_remark').value.trim();
@@ -706,29 +762,19 @@
         document.getElementById('aud_box').style.display = 'none';
     }
 
-    // BACKUP & RESTORE MANAGER
+    // BACKUP & RESTORE
     function downloadJSONBackup() {
-        const fullBackup = {
-            inventory: inventory,
-            users: users,
-            transactions: transactions,
-            backupDate: new Date().toISOString()
-        };
+        const fullBackup = { inventory, users, transactions, backupDate: new Date().toISOString() };
         const blob = new Blob([JSON.stringify(fullBackup, null, 2)], { type: "application/json" });
         const a = document.createElement("a");
         a.href = URL.createObjectURL(blob);
         a.download = `Store_ERP_Backup_${new Date().toISOString().slice(0,10)}.json`;
         a.click();
-        alert("Backup file successfully download thai gai!");
     }
 
     function restoreJSONBackup() {
         const fileInput = document.getElementById('backupFileInput');
-        if (!fileInput.files || fileInput.files.length === 0) {
-            return alert("Krupya pahela .json backup file select karo!");
-        }
-
-        const file = fileInput.files[0];
+        if (!fileInput.files || fileInput.files.length === 0) return alert("Backup file select karo!");
         const reader = new FileReader();
         reader.onload = function(e) {
             try {
@@ -738,19 +784,13 @@
                     if (data.users) users = data.users;
                     if (data.transactions) transactions = data.transactions;
                     saveAll();
-                    initUserSelector();
-                    alert("Data Backup successfully restore thai gayo!");
-                } else {
-                    alert("Aa file ma valid Store ERP data nathi!");
+                    alert("Backup successfully restore thai gayo!");
                 }
-            } catch (err) {
-                alert("File read karva ma bhul: " + err.message);
-            }
+            } catch (err) { alert("Error: " + err.message); }
         };
-        reader.readAsText(file);
+        reader.readAsText(fileInput.files[0]);
     }
 
-    // CSV REPORT EXPORT
     function exportToCSV() {
         let csv = "Item Code,Item Name,Category,Location,UOM,Current Stock,Safety Min Stock\n";
         inventory.forEach(i => {
@@ -763,8 +803,8 @@
         link.click();
     }
 
-    // Initialize App
-    initUserSelector();
+    // Initialize
+    checkLoginStatus();
     renderStockMaster();
     renderItemMasterList();
 </script>
