@@ -190,19 +190,19 @@
 </head>
 <body>
 
-<!-- LOGIN MODAL -->
+<!-- LOGIN MODAL (Blank Inputs) -->
 <div id="loginScreen">
     <div class="login-box">
         <h2>📦 Store ERP Login</h2>
-        <p>Admin લૉગિન અથવા Direct Access</p>
+        <p>Login કરો અથવા Direct Access મેળવો</p>
         
         <div class="form-group">
             <label>User ID:</label>
-            <input type="text" id="login_userid" value="Mehul Pagi">
+            <input type="text" id="login_userid" placeholder="User ID દાખલ કરો" autocomplete="off">
         </div>
         <div class="form-group">
             <label>Password:</label>
-            <input type="password" id="login_password" placeholder="PAGI2005 દાખલ કરો">
+            <input type="password" id="login_password" placeholder="Password દાખલ કરો" autocomplete="off">
         </div>
         <button class="btn btn-primary" onclick="loginWithCredentials()">Login Karo</button>
 
@@ -224,8 +224,8 @@
 </header>
 
 <div class="user-ribbon">
-    <div>User: <strong id="lblCurUser">Mehul Pagi</strong> | <span class="role-pill" id="lblCurRole">Admin</span></div>
-    <div style="font-size:0.75rem; color:var(--text-muted);" id="lblCurId">ID: Mehul Pagi</div>
+    <div>User: <strong id="lblCurUser">-</strong> | <span class="role-pill" id="lblCurRole">-</span></div>
+    <div style="font-size:0.75rem; color:var(--text-muted);" id="lblCurId">-</div>
 </div>
 
 <!-- NAVIGATION TABS -->
@@ -391,7 +391,7 @@
         <div class="card">
             <div class="card-title">💾 Permanent Data Backup (Save File)</div>
             <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:14px;">
-                Tamaro data safe rakhva mate backup file download kari lo:
+                તમારો ડેટા સેવ રાખવા માટે બેકઅપ ફાઈલ ડાઉનલોડ કરી રાખો:
             </p>
             <button class="btn btn-backup" onclick="downloadJSONBackup()">📥 Download Store Backup File (.json)</button>
         </div>
@@ -417,7 +417,7 @@
             </div>
             <div class="form-group">
                 <label>Password:</label>
-                <input type="password" id="u_password" placeholder="Password set karo">
+                <input type="password" id="u_password" placeholder="Password set કરો">
             </div>
             <div class="form-group">
                 <label>User Role:</label>
@@ -467,7 +467,6 @@
         renderUserList();
     }
 
-    // LOGIN LOGIC WITH MASTER BYPASS
     function checkLoginStatus() {
         if (currentUser) {
             document.getElementById('loginScreen').style.display = 'none';
@@ -476,6 +475,8 @@
             document.getElementById('lblCurId').innerText = "ID: " + (currentUser.userId || "guest");
         } else {
             document.getElementById('loginScreen').style.display = 'flex';
+            document.getElementById('login_userid').value = '';
+            document.getElementById('login_password').value = '';
         }
     }
 
@@ -483,16 +484,20 @@
         const uId = document.getElementById('login_userid').value.trim();
         const pwd = document.getElementById('login_password').value.trim();
 
-        // 1. કાયમી ફિક્સ Admin Bypass (કોઈ પણ ભૂલ વગર સીધા લૉગિન માટે)
+        if (!uId || !pwd) {
+            alert('કૃપા કરીને User ID અને Password બંને દાખલ કરો!');
+            return;
+        }
+
+        // Direct Master Admin Check
         if (uId.toLowerCase() === "mehul pagi" && pwd === "PAGI2005") {
             currentUser = { id: 1, name: "Mehul Pagi", userId: "Mehul Pagi", role: "Admin" };
             localStorage.setItem('erp_logged_user', JSON.stringify(currentUser));
             checkLoginStatus();
-            alert("સ્વાગત છે, Mehul Pagi! (Admin Mode Active)");
+            alert("સ્વાગત છે, Mehul Pagi! (Admin Mode)");
             return;
         }
 
-        // 2. અન્ય યુઝર્સ માટે
         const match = users.find(u => u.userId.toLowerCase() === uId.toLowerCase() && u.password === pwd);
         if (match) {
             currentUser = match;
@@ -500,12 +505,12 @@
             checkLoginStatus();
             alert(`સ્વાગત છે, ${currentUser.name}!`);
         } else {
-            alert("User ID અથવા Password ખોટો છે! Mehul Pagi અને PAGI2005 લખો.");
+            alert("User ID અથવા Password ખોટો છે!");
         }
     }
 
     function loginDirectWithoutPassword() {
-        currentUser = { id: 999, name: "Direct Guest User", userId: "guest", role: "Operator" };
+        currentUser = { id: 999, name: "Guest User", userId: "guest", role: "Operator" };
         localStorage.setItem('erp_logged_user', JSON.stringify(currentUser));
         checkLoginStatus();
     }
@@ -513,8 +518,6 @@
     function logoutUser() {
         currentUser = null;
         localStorage.removeItem('erp_logged_user');
-        document.getElementById('login_userid').value = 'Mehul Pagi';
-        document.getElementById('login_password').value = '';
         checkLoginStatus();
     }
 
@@ -810,7 +813,6 @@
         link.click();
     }
 
-    // Initialize App
     checkLoginStatus();
     renderStockMaster();
     renderItemMasterList();
