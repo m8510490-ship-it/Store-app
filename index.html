@@ -21,7 +21,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { background-color: var(--bg-main); color: var(--text-main); padding-bottom: 40px; }
 
-        /* Login Screen Overlay */
+        /* Login Screen */
         #loginScreen {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -56,7 +56,6 @@
         }
         .brand-title { font-size: 1.15rem; font-weight: 700; }
 
-        /* Ribbon */
         .user-ribbon {
             background: #ffffff;
             border-bottom: 1px solid var(--border-color);
@@ -75,7 +74,6 @@
             border: 1px solid #bfdbfe;
         }
 
-        /* Nav Tabs */
         .nav-tabs { 
             display: flex; 
             overflow-x: auto; 
@@ -192,15 +190,15 @@
 </head>
 <body>
 
-<!-- LOGIN MODAL SCREEN -->
+<!-- LOGIN MODAL -->
 <div id="loginScreen">
     <div class="login-box">
         <h2>📦 Store ERP Login</h2>
-        <p>Potano User ID ane Password nakho athva Direct Entry karo</p>
+        <p>Admin લૉગિન અથવા Direct Access</p>
         
         <div class="form-group">
-            <label>User ID (Username):</label>
-            <input type="text" id="login_userid" placeholder="e.g. admin">
+            <label>User ID:</label>
+            <input type="text" id="login_userid" placeholder="e.g. Mehul Pagi" value="Mehul Pagi">
         </div>
         <div class="form-group">
             <label>Password:</label>
@@ -212,11 +210,11 @@
             <span style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: #fff; padding: 0 8px; font-size: 0.75rem; color: #64748b;">ATHVA</span>
         </div>
 
-        <button class="btn btn-guest" onclick="loginDirectWithoutPassword()">⚡ Password Vagar Khola (Fast Access)</button>
+        <button class="btn btn-guest" onclick="loginDirectWithoutPassword()">⚡ Password Vagar Khola (Guest/Fast Access)</button>
     </div>
 </div>
 
-<!-- MAIN APPLICATION -->
+<!-- MAIN HEADER -->
 <header>
     <div class="brand-title">📦 Store ERP System</div>
     <div style="display: flex; gap: 8px;">
@@ -226,11 +224,11 @@
 </header>
 
 <div class="user-ribbon">
-    <div>User: <strong id="lblCurUser">Guest</strong> | <span class="role-pill" id="lblCurRole">Operator</span></div>
-    <div style="font-size:0.75rem; color:var(--text-muted);" id="lblCurId">ID: guest</div>
+    <div>User: <strong id="lblCurUser">Mehul Pagi</strong> | <span class="role-pill" id="lblCurRole">Admin</span></div>
+    <div style="font-size:0.75rem; color:var(--text-muted);" id="lblCurId">ID: Mehul Pagi</div>
 </div>
 
-<!-- Tabs List -->
+<!-- NAVIGATION TABS -->
 <div class="nav-tabs">
     <button class="tab-btn active" onclick="switchTab('stock_master')">📊 Stock Master</button>
     <button class="tab-btn" onclick="switchTab('item_master')">⚙️ Item Master</button>
@@ -405,17 +403,17 @@
         </div>
     </div>
 
-    <!-- 7. USER MASTER WITH PASSWORDS (20+ Users) -->
+    <!-- 7. USER MASTER -->
     <div id="tab-user_master" class="tab-content">
         <div class="card">
             <div class="card-title">👥 Register New User (ID & Password Setup)</div>
             <div class="form-group">
                 <label>Full Name:</label>
-                <input type="text" id="u_name" placeholder="e.g. Mehul Pagi">
+                <input type="text" id="u_name" placeholder="e.g. Operator Name">
             </div>
             <div class="form-group">
                 <label>User ID (Login ID):</label>
-                <input type="text" id="u_loginid" placeholder="e.g. mehul01">
+                <input type="text" id="u_loginid" placeholder="e.g. user01">
             </div>
             <div class="form-group">
                 <label>Password:</label>
@@ -443,15 +441,16 @@
 <div id="printArea" style="display:none;"></div>
 
 <script>
-    // Default Items & Users
+    // Initial Items & Master Admin User Setup
     const defaultItems = [
         { code: "ITM-001", name: "Solar DC Cable 4 sq mm", category: "Raw Material", location: "Rack-A1", uom: "MTR", min: 100, stock: 500 },
         { code: "ITM-002", name: "MC4 Connectors Male/Female", category: "Raw Material", location: "Bin-B2", uom: "SET", min: 50, stock: 40 },
         { code: "ITM-003", name: "Aluminium Frame 540W", category: "Finished Goods", location: "Rack-C1", uom: "NOS", min: 200, stock: 750 }
     ];
 
+    // Master Admin: Mehul Pagi / PAGI2005
     const defaultUsers = [
-        { id: 1, name: "Admin Mehul", userId: "admin", password: "123", role: "Admin" },
+        { id: 1, name: "Mehul Pagi", userId: "Mehul Pagi", password: "PAGI2005", role: "Admin" },
         { id: 2, name: "Store Supervisor", userId: "super", password: "123", role: "Supervisor" },
         { id: 3, name: "Store Operator", userId: "oper", password: "123", role: "Operator" }
     ];
@@ -460,6 +459,12 @@
     let users = JSON.parse(localStorage.getItem('erp_final_users')) || defaultUsers;
     let transactions = JSON.parse(localStorage.getItem('erp_final_txns')) || [];
     let currentUser = JSON.parse(localStorage.getItem('erp_logged_user')) || null;
+
+    // ખાતરી કરો કે Mehul Pagi હંમેશા Admin તરીકે હાજર રહે
+    if (!users.find(u => u.userId.toLowerCase() === "mehul pagi")) {
+        users.unshift({ id: 1, name: "Mehul Pagi", userId: "Mehul Pagi", password: "PAGI2005", role: "Admin" });
+        localStorage.setItem('erp_final_users', JSON.stringify(users));
+    }
 
     function saveAll() {
         localStorage.setItem('erp_final_items', JSON.stringify(inventory));
@@ -483,17 +488,17 @@
     }
 
     function loginWithCredentials() {
-        const uId = document.getElementById('login_userid').value.trim().toLowerCase();
+        const uId = document.getElementById('login_userid').value.trim();
         const pwd = document.getElementById('login_password').value.trim();
 
-        const match = users.find(u => u.userId.toLowerCase() === uId && u.password === pwd);
+        const match = users.find(u => u.userId.toLowerCase() === uId.toLowerCase() && u.password === pwd);
         if (match) {
             currentUser = match;
             localStorage.setItem('erp_logged_user', JSON.stringify(currentUser));
             checkLoginStatus();
-            alert(`Swagat chhe, ${currentUser.name}!`);
+            alert(`સ્વાગત છે, ${currentUser.name}! (રોલ: ${currentUser.role})`);
         } else {
-            alert('User ID athva Password khoto chhe! (Default: admin / 123)');
+            alert('User ID અથવા Password ખોટો છે! Mehul Pagi / PAGI2005 દાખલ કરો.');
         }
     }
 
@@ -506,7 +511,7 @@
     function logoutUser() {
         currentUser = null;
         localStorage.removeItem('erp_logged_user');
-        document.getElementById('login_userid').value = '';
+        document.getElementById('login_userid').value = 'Mehul Pagi';
         document.getElementById('login_password').value = '';
         checkLoginStatus();
     }
@@ -523,18 +528,18 @@
 
     // USER MASTER
     function saveUserMaster() {
-        if (!currentUser || currentUser.role !== 'Admin') return alert('Fakt Admin j nava user add kari shake!');
+        if (!currentUser || currentUser.role !== 'Admin') return alert('માત્ર Admin જ નવો યુઝર ઉમેરી શકે!');
         const name = document.getElementById('u_name').value.trim();
-        const uId = document.getElementById('u_loginid').value.trim().toLowerCase();
+        const uId = document.getElementById('u_loginid').value.trim();
         const pwd = document.getElementById('u_password').value.trim();
         const role = document.getElementById('u_role').value;
 
-        if (!name || !uId || !pwd) return alert('Name, User ID ane Password badhu jaruri chhe!');
-        if (users.find(u => u.userId.toLowerCase() === uId)) return alert('Aa User ID pahelathi che!');
+        if (!name || !uId || !pwd) return alert('Name, User ID અને Password જરૂરી છે!');
+        if (users.find(u => u.userId.toLowerCase() === uId.toLowerCase())) return alert('આ User ID પહેલાથી હાજર છે!');
 
         users.push({ id: Date.now(), name, userId: uId, password: pwd, role });
         saveAll();
-        alert('Navo user successfully add thayo!');
+        alert('નવો યુઝર સફળતાપૂર્વક ઉમેરાઈ ગયો!');
         document.getElementById('u_name').value = '';
         document.getElementById('u_loginid').value = '';
         document.getElementById('u_password').value = '';
@@ -552,7 +557,7 @@
                         <small style="color:var(--text-muted);">ID: <b>${u.userId}</b> | Pwd: ***</small>
                     </div>
                     <div>
-                        ${u.id !== 1 ? `<button onclick="deleteUser(${u.id})" style="color:red; background:none; border:none; font-weight:bold; cursor:pointer;">Delete</button>` : '<small style="color:gray;">Admin</small>'}
+                        ${u.userId.toLowerCase() !== 'mehul pagi' ? `<button onclick="deleteUser(${u.id})" style="color:red; background:none; border:none; font-weight:bold; cursor:pointer;">Delete</button>` : '<small style="color:green; font-weight:bold;">Main Admin</small>'}
                     </div>
                 </div>
             `;
@@ -561,8 +566,8 @@
     }
 
     function deleteUser(id) {
-        if (!currentUser || currentUser.role !== 'Admin') return alert('Fakt Admin user delete kari shake!');
-        if (confirm('A user ne delete karvo chhe?')) {
+        if (!currentUser || currentUser.role !== 'Admin') return alert('માત્ર Admin જ ડિલીટ કરી શકે!');
+        if (confirm('આ યુઝરને ડિલીટ કરવો છે?')) {
             users = users.filter(u => u.id !== id);
             saveAll();
         }
@@ -612,7 +617,7 @@
 
     // ITEM MASTER
     function saveItemMaster() {
-        if (!currentUser || currentUser.role === 'Operator') return alert('Operator Item Master add kari shakto nathi!');
+        if (!currentUser || currentUser.role === 'Operator') return alert('Operator આઈટમ માસ્ટર એડિટ કરી શકતા નથી!');
         const code = document.getElementById('im_code').value.trim();
         const name = document.getElementById('im_name').value.trim();
         const cat = document.getElementById('im_cat').value;
@@ -620,12 +625,12 @@
         const uom = document.getElementById('im_uom').value;
         const min = parseFloat(document.getElementById('im_min').value) || 0;
 
-        if (!code || !name) return alert('Item Code ane Item Name jaruri chhe!');
-        if (inventory.find(i => i.code.toLowerCase() === code.toLowerCase())) return alert('Aa Item Code pahelathi Item Master ma chhe!');
+        if (!code || !name) return alert('Item Code અને Item Name જરૂરી છે!');
+        if (inventory.find(i => i.code.toLowerCase() === code.toLowerCase())) return alert('આ Item Code પહેલાથી હાજર છે!');
 
         inventory.push({ code, name, category: cat, location: loc, uom, min, stock: 0 });
         saveAll();
-        alert('Item Master successfully save thai gayu!');
+        alert('Item Master successfully save થઈ ગયું!');
         document.getElementById('im_code').value = '';
         document.getElementById('im_name').value = '';
         document.getElementById('im_loc').value = '';
@@ -652,7 +657,7 @@
     }
 
     function deleteItemMaster(idx) {
-        if (confirm(`Aa item delete karvi chhe?`)) {
+        if (confirm(`આ આઈટમ ડિલીટ કરવી છે?`)) {
             inventory.splice(idx, 1);
             saveAll();
         }
@@ -675,11 +680,11 @@
         const ref = document.getElementById(isIN ? 'in_challan' : 'out_ref').value.trim();
         const party = document.getElementById(isIN ? 'in_vendor' : 'out_dept').value.trim();
 
-        if (!code || isNaN(qty) || qty <= 0) return alert('Valid Code ane Quantity nakho!');
+        if (!code || isNaN(qty) || qty <= 0) return alert('સાચો કોડ અને જથ્થો દાખલ કરો!');
         const item = inventory.find(i => i.code.toLowerCase() === code.toLowerCase());
-        if (!item) return alert('Item Item Master ma nathi! Pahela add karo.');
+        if (!item) return alert('આઈટમ માસ્ટરમાં નથી! પહેલા ઉમેરો.');
 
-        if (!isIN && item.stock < qty) return alert(`Stock ochho chhe! Current Stock: ${item.stock}`);
+        if (!isIN && item.stock < qty) return alert(`સ્ટોક ઓછો છે! હાજર સ્ટોક: ${item.stock}`);
 
         item.stock = isIN ? (item.stock + qty) : (item.stock - qty);
         const docNo = (isIN ? 'GRN-' : 'ISS-') + Math.floor(1000 + Math.random() * 9000);
@@ -687,7 +692,7 @@
         transactions.push(rec);
         saveAll();
 
-        if (confirm(`${isIN ? 'GRN' : 'Issue Challan'} success! Print slip kadhvi chhe?`)) {
+        if (confirm(`${isIN ? 'GRN' : 'Issue Challan'} સેવ થઈ ગયું! પ્રિન્ટ સ્લિપ કાઢવી છે?`)) {
             printSlip(rec, item);
         }
         document.getElementById(isIN ? 'in_qty' : 'out_qty').value = '';
@@ -733,12 +738,12 @@
     }
 
     function applyAudit() {
-        if (!currentUser || currentUser.role === 'Operator') return alert('Fakt Supervisor ke Admin audit kari shake!');
+        if (!currentUser || currentUser.role === 'Operator') return alert('માત્ર Supervisor કે Admin જ ઓડિટ કરી શકે!');
         const code = document.getElementById('aud_code').value.trim();
         const actual = parseFloat(document.getElementById('aud_actual_qty').value);
         const remark = document.getElementById('aud_remark').value.trim();
         const item = inventory.find(i => i.code.toLowerCase() === code.toLowerCase());
-        if (!item || isNaN(actual)) return alert('Details barabar bharo!');
+        if (!item || isNaN(actual)) return alert('વિગતો બરાબર ભરો!');
 
         const diff = actual - item.stock;
         item.stock = actual;
@@ -784,7 +789,7 @@
                     if (data.users) users = data.users;
                     if (data.transactions) transactions = data.transactions;
                     saveAll();
-                    alert("Backup successfully restore thai gayo!");
+                    alert("Backup successfully restore થઈ ગયું!");
                 }
             } catch (err) { alert("Error: " + err.message); }
         };
@@ -803,7 +808,7 @@
         link.click();
     }
 
-    // Initialize
+    // Initialize App
     checkLoginStatus();
     renderStockMaster();
     renderItemMasterList();
