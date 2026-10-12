@@ -3,173 +3,263 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Store ERP Inventory</title>
-    <!-- Barcode Scanner Library -->
+    <title>Enterprise Store & Inventory ERP</title>
+    <!-- Barcode Scanner -->
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
         * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { margin: 0; padding: 0; background-color: #f4f6f9; color: #333; }
-        header { background: #1e3c72; color: white; padding: 15px; text-align: center; font-size: 1.2rem; font-weight: bold; }
-        .nav-tabs { display: flex; background: white; border-bottom: 2px solid #ddd; position: sticky; top: 0; z-index: 10; }
-        .tab-btn { flex: 1; padding: 12px 5px; border: none; background: none; font-size: 0.9rem; font-weight: bold; cursor: pointer; color: #666; }
-        .tab-btn.active { color: #1e3c72; border-bottom: 3px solid #1e3c72; }
-        .container { padding: 15px; max-width: 600px; margin: auto; }
-        .card { background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.08); margin-bottom: 15px; }
+        body { margin: 0; padding: 0; background-color: #f0f2f5; color: #2d3748; }
+        header { background: #1a365d; color: white; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; }
+        .user-panel { background: #ebf8ff; border-bottom: 1px solid #bee3f8; padding: 8px 15px; display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; }
+        .nav-tabs { display: flex; overflow-x: auto; background: white; border-bottom: 2px solid #e2e8f0; position: sticky; top: 0; z-index: 100; white-space: nowrap; }
+        .tab-btn { flex: none; padding: 12px 16px; border: none; background: none; font-size: 0.85rem; font-weight: 600; cursor: pointer; color: #4a5568; }
+        .tab-btn.active { color: #2b6cb0; border-bottom: 3px solid #2b6cb0; background: #f7fafc; }
+        .container { padding: 15px; max-width: 800px; margin: auto; }
+        .card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 15px; }
         .form-group { margin-bottom: 12px; }
-        label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.9rem; }
-        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; }
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 6px; font-size: 1rem; font-weight: bold; cursor: pointer; margin-top: 8px; }
-        .btn-primary { background: #1e3c72; color: white; }
-        .btn-success { background: #28a745; color: white; }
-        .btn-danger { background: #dc3545; color: white; }
-        .btn-scan { background: #ff9800; color: white; margin-bottom: 10px; }
-        .stock-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; }
-        .badge-alert { background: #ffdddd; color: #d32f2f; padding: 3px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
+        label { display: block; margin-bottom: 4px; font-weight: 600; font-size: 0.85rem; }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 0.95rem; }
+        .btn { width: 100%; padding: 10px; border: none; border-radius: 6px; font-size: 0.95rem; font-weight: 600; cursor: pointer; margin-top: 6px; }
+        .btn-primary { background: #2b6cb0; color: white; }
+        .btn-success { background: #38a169; color: white; }
+        .btn-danger { background: #e53e3e; color: white; }
+        .btn-warning { background: #dd6b20; color: white; }
+        .btn-scan { background: #4a5568; color: white; margin-bottom: 8px; }
+        .btn-excel { background: #276749; color: white; width: auto; padding: 6px 12px; font-size: 0.8rem; border-radius: 4px; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-        #reader { width: 100%; border-radius: 8px; margin-bottom: 10px; }
+        .stock-item { padding: 12px; border-bottom: 1px solid #edf2f7; display: flex; justify-content: space-between; align-items: center; }
+        .badge { font-size: 0.75rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
+        .badge-danger { background: #fed7d7; color: #9b2c2c; }
+        .badge-role { background: #c6f6d5; color: #22543d; }
+        @media print {
+            body * { visibility: hidden; }
+            #printArea, #printArea * { visibility: visible; }
+            #printArea { position: absolute; left: 0; top: 0; width: 100%; }
+        }
     </style>
 </head>
 <body>
 
-<header>📦 સ્ટોર અને ઇન્વેન્ટરી ERP</header>
+<header>
+    <span style="font-weight:bold; font-size:1.1rem;">🏢 Store ERP Management</span>
+    <button onclick="downloadCSV()" class="btn-excel">📥 Excel / CSV રિપોર્ટ</button>
+</header>
+
+<div class="user-panel">
+    <div>
+        યુઝર: <strong id="curUserName">Admin</strong> | રોલ: <span class="badge badge-role" id="curUserRole">Admin</span>
+    </div>
+    <button onclick="switchUserRole()" style="padding: 2px 8px; font-size: 0.8rem;">રોલ બદલો</button>
+</div>
 
 <div class="nav-tabs">
-    <button class="tab-btn active" onclick="switchTab('stock')">📊 સ્ટોક</button>
-    <button class="tab-btn" onclick="switchTab('inward')">📥 ઇનવર્ડ</button>
-    <button class="tab-btn" onclick="switchTab('outward')">📤 આઉટવર્ડ</button>
-    <button class="tab-btn" onclick="switchTab('master')">➕ માસ્ટર</button>
+    <button class="tab-btn active" onclick="showTab('stock')">📊 સ્ટોક બેલેન્સ</button>
+    <button class="tab-btn" onclick="showTab('inward')">📥 ઇનવર્ડ (GRN)</button>
+    <button class="tab-btn" onclick="showTab('outward')">📤 ઇશ્યૂ (Issue)</button>
+    <button class="tab-btn" onclick="showTab('audit')">📝 ફિઝિકલ ઓડિટ</button>
+    <button class="tab-btn" onclick="showTab('master')">⚙️ આઈટમ માસ્ટર</button>
 </div>
 
 <div class="container">
 
-    <!-- ૧. સ્ટોક લિસ્ટ -->
+    <!-- ૧. સ્ટોક ડેશબોર્ડ -->
     <div id="tab-stock" class="tab-content active">
         <div class="card">
-            <h3>લાઇવ સ્ટોક બેલેન્સ</h3>
-            <div id="stock-list">હાલમાં કોઈ સ્ટોક નથી.</div>
+            <div style="display:flex; gap:10px; margin-bottom:10px;">
+                <input type="text" id="searchFilter" placeholder="આઈટમ નામ, કોડ કે રેકથી શોધો..." onkeyup="renderStock()">
+                <select id="locFilter" onchange="renderStock()" style="width:130px;">
+                    <option value="">બધા રેક</option>
+                </select>
+            </div>
+            <div id="stockList">કોઈ સ્ટોક નથી.</div>
         </div>
     </div>
 
-    <!-- ૨. ઇનવર્ડ / Stock In -->
+    <!-- ૨. ઇનવર્ડ / GRN -->
     <div id="tab-inward" class="tab-content">
         <div class="card">
-            <h3>મટિરિયલ ઇનવર્ડ (Stock In)</h3>
-            <button class="btn btn-scan" onclick="startScanner('inward-code')">📷 કેમેરાથી કોડ સ્કેન કરો</button>
-            <div id="reader-inward" style="display:none;"></div>
+            <h3>📥 મટિરિયલ ઇનવર્ડ (GRN)</h3>
+            <button class="btn btn-scan" onclick="startScanner('in-code')">📷 બારકોડ સ્કેન કરો</button>
+            <div id="reader-in-code" style="display:none; margin-bottom:10px;"></div>
             
             <div class="form-group">
                 <label>આઈટમ કોડ:</label>
-                <input type="text" id="inward-code" placeholder="કોડ દાખલ કરો અથવા સ્કેન કરો">
+                <input type="text" id="in-code" placeholder="દા.ત. RM-001">
             </div>
             <div class="form-group">
                 <label>જથ્થો (Qty):</label>
-                <input type="number" id="inward-qty" placeholder="દા.ત. 10">
+                <input type="number" id="in-qty" placeholder="જથ્થો લખો">
             </div>
             <div class="form-group">
-                <label>સપ્લાયર / ચલણ નં.:</label>
-                <input type="text" id="inward-ref" placeholder="Supplier / Challan Details">
+                <label>ચલણ / PO નંબર:</label>
+                <input type="text" id="in-challan" placeholder="PO / Challan No">
             </div>
-            <button class="btn btn-success" onclick="processStock('IN')">સ્ટોકમાં ઉમેરો (Inward)</button>
+            <div class="form-group">
+                <label>સપ્લાયર / વેન્ડર:</label>
+                <input type="text" id="in-vendor" placeholder="સપ્લાયરનું નામ">
+            </div>
+            <button class="btn btn-success" onclick="saveTransaction('IN')">GRN જનરેટ અને સેવ કરો</button>
         </div>
     </div>
 
     <!-- ૩. આઉટવર્ડ / Issue -->
     <div id="tab-outward" class="tab-content">
         <div class="card">
-            <h3>મટિરિયલ ઇશ્યૂ (Stock Out)</h3>
-            <button class="btn btn-scan" onclick="startScanner('outward-code')">📷 કેમેરાથી કોડ સ્કેન કરો</button>
-            <div id="reader-outward" style="display:none;"></div>
+            <h3>📤 મટિરિયલ ઇશ્યૂ / ડિસ્પેચ</h3>
+            <button class="btn btn-scan" onclick="startScanner('out-code')">📷 બારકોડ સ્કેન કરો</button>
+            <div id="reader-out-code" style="display:none; margin-bottom:10px;"></div>
 
             <div class="form-group">
                 <label>આઈટમ કોડ:</label>
-                <input type="text" id="outward-code" placeholder="કોડ દાખલ કરો અથવા સ્કેન કરો">
+                <input type="text" id="out-code" placeholder="કોડ દાખલ કરો">
             </div>
             <div class="form-group">
-                <label>જથ્થો (Qty):</label>
-                <input type="number" id="outward-qty" placeholder="દા.ત. 5">
+                <label>ઇશ્યૂ જથ્થો (Qty):</label>
+                <input type="number" id="out-qty" placeholder="જથ્થો">
             </div>
             <div class="form-group">
-                <label>વિભાગ / લેનાર વ્યક્તિ:</label>
-                <input type="text" id="outward-ref" placeholder="Dept / Receiver Name">
+                <label>વિભાગ / મશીન / લાઈન:</label>
+                <input type="text" id="out-dept" placeholder="પ્રોડક્શન લાઇન / ડિસ્પેચ">
             </div>
-            <button class="btn btn-danger" onclick="processStock('OUT')">મટિરિયલ ઇશ્યૂ કરો (Outward)</button>
+            <div class="form-group">
+                <label>ઇશ્યૂ સ્લિપ / ગેટપાસ નં.:</label>
+                <input type="text" id="out-slip" placeholder="Slip Number">
+            </div>
+            <button class="btn btn-danger" onclick="saveTransaction('OUT')">ચલણ જનરેટ અને ઇશ્યૂ કરો</button>
         </div>
     </div>
 
-    <!-- ૪. નવું આઈટમ માસ્ટર -->
+    <!-- ૪. સ્ટોક ઓડિટ / ફિઝિકલ કાઉન્ટિંગ -->
+    <div id="tab-audit" class="tab-content">
+        <div class="card">
+            <h3>📝 ફિઝિકલ સ્ટોક વેરિફિકેશન / ઓડિટ</h3>
+            <p style="font-size:0.8rem; color:#718096;">વાસ્તવિક (Physical) ગણતરી દાખલ કરો, સિસ્ટમ સ્ટોક સાથે તફાવત તરત દેખાશે.</p>
+            <div class="form-group">
+                <label>આઈટમ કોડ:</label>
+                <input type="text" id="audit-code" placeholder="આઈટમ કોડ લખો અથવા સ્કેન કરો" onchange="loadAuditDetails()">
+            </div>
+            <div id="audit-info" style="display:none; background:#edf2f7; padding:10px; border-radius:6px; margin-bottom:10px;">
+                <div>આઈટમ: <b id="audit-name">-</b> | રેક: <b id="audit-loc">-</b></div>
+                <div>સિસ્ટમ સ્ટોક: <b id="audit-sys-qty">0</b></div>
+            </div>
+            <div class="form-group">
+                <label>ફિઝિકલ ગણતરી (Actual Stock):</label>
+                <input type="number" id="audit-actual-qty" placeholder="વાસ્તવિક ગણતરી">
+            </div>
+            <div class="form-group">
+                <label>ઓડિટર રીમાર્ક / કારણ:</label>
+                <input type="text" id="audit-remark" placeholder="નુકસાન / મિસ્સિંગ / એક્સ્ટ્રા">
+            </div>
+            <button class="btn btn-warning" onclick="saveAuditAdjustment()">ઓડિટ સ્ટોક કન્ફર્મ કરો</button>
+        </div>
+    </div>
+
+    <!-- ૫. આઈટમ માસ્ટર (Dynamic & Location) -->
     <div id="tab-master" class="tab-content">
         <div class="card">
-            <h3>નવી આઈટમ ઉમેરો</h3>
-            <button class="btn btn-scan" onclick="startScanner('master-code')">📷 કેમેરાથી બારકોડ સ્કેન કરો</button>
-            <div id="reader-master" style="display:none;"></div>
-
+            <h3>⚙️ નવું મટિરિયલ રજીસ્ટ્રેશન</h3>
             <div class="form-group">
-                <label>આઈટમ કોડ / બારકોડ:</label>
-                <input type="text" id="master-code" placeholder="દા.ત. ITM-001">
+                <label>આઈટમ કોડ (બારકોડ):</label>
+                <input type="text" id="m-code" placeholder="દા.ત. ITM-001">
             </div>
             <div class="form-group">
-                <label>આઈટમનું નામ:</label>
-                <input type="text" id="master-name" placeholder="દા.ત. Bolt 10mm">
+                <label>આઈટમનું પૂરું નામ:</label>
+                <input type="text" id="m-name" placeholder="દા.ત. 4 sq mm Solar DC Cable">
             </div>
             <div class="form-group">
-                <label>યુનિટ (UOM):</label>
-                <select id="master-uom">
+                <label>રેક / લોકેશન (Rack/Bin):</label>
+                <input type="text" id="m-loc" placeholder="દા.ત. Rack-A1, Bin-04">
+            </div>
+            <div class="form-group">
+                <label>UOM (એકમ):</label>
+                <select id="m-uom">
                     <option value="NOS">NOS</option>
-                    <option value="KG">KG</option>
                     <option value="MTR">MTR</option>
+                    <option value="KG">KG</option>
+                    <option value="SET">SET</option>
                     <option value="BOX">BOX</option>
                 </select>
             </div>
             <div class="form-group">
-                <label>મિનિમમ સ્ટોક એલર્ટ લિમિટ:</label>
-                <input type="number" id="master-min" value="5">
+                <label>મિનિમમ સેફ્ટી સ્ટોક (Alert):</label>
+                <input type="number" id="m-min" value="10">
             </div>
-            <button class="btn btn-primary" onclick="saveMaster()">માસ્ટર સેવ કરો</button>
+            <button class="btn btn-primary" onclick="saveMasterItem()">માસ્ટરમાં ઉમેરો</button>
         </div>
     </div>
 
 </div>
 
+<!-- પ્રિન્ટિંગ સ્લિપ મોડલ -->
+<div id="printArea" style="display:none; padding:20px; font-family:sans-serif;"></div>
+
 <script>
-    // LocalStorage માંથી ડેટા લોડ કરવો
-    let inventory = JSON.parse(localStorage.getItem('erp_inventory')) || [];
+    // Local Data Storage
+    let inventory = JSON.parse(localStorage.getItem('erp_db_items')) || [];
+    let logs = JSON.parse(localStorage.getItem('erp_db_logs')) || [];
+    let currentUser = { name: "Mehul", role: "Admin" };
     let html5QrCode = null;
 
-    function saveToStorage() {
-        localStorage.setItem('erp_inventory', JSON.stringify(inventory));
+    function saveDB() {
+        localStorage.setItem('erp_db_items', JSON.stringify(inventory));
+        localStorage.setItem('erp_db_logs', JSON.stringify(logs));
         renderStock();
     }
 
-    function switchTab(tab) {
-        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-        document.getElementById(`tab-${tab}`).classList.add('active');
+    function showTab(id) {
+        document.querySelectorAll('.tab-content').forEach(e => e.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(e => e.classList.remove('active'));
+        document.getElementById(`tab-${id}`).classList.add('active');
         event.target.classList.add('active');
-        if (html5QrCode) {
-            html5QrCode.stop().catch(() => {});
-        }
+        if (html5QrCode) html5QrCode.stop().catch(() => {});
+        if (id === 'stock') renderStock();
     }
 
+    function switchUserRole() {
+        const roles = ["Admin", "Supervisor", "Operator"];
+        let nextIndex = (roles.indexOf(currentUser.role) + 1) % roles.length;
+        currentUser.role = roles[nextIndex];
+        document.getElementById('curUserRole').innerText = currentUser.role;
+        alert(`રોલ બદલાયો: ${currentUser.role}`);
+    }
+
+    // સ્ટોક રેન્ડરિંગ
     function renderStock() {
-        const listDiv = document.getElementById('stock-list');
-        if (inventory.length === 0) {
-            listDiv.innerHTML = '<p style="color:#777;">હજુ કોઈ આઈટમ ઉમેરાઈ નથી.</p>';
+        const search = document.getElementById('searchFilter').value.toLowerCase();
+        const loc = document.getElementById('locFilter').value;
+        const listDiv = document.getElementById('stockList');
+        const locSelect = document.getElementById('locFilter');
+
+        // લોકેશન લિસ્ટ અપડેટ કરવું
+        let locs = [...new Set(inventory.map(i => i.location).filter(Boolean))];
+        locSelect.innerHTML = '<option value="">બધા રેક</option>' + locs.map(l => `<option value="${l}">${l}</option>`).join('');
+        locSelect.value = loc;
+
+        let filtered = inventory.filter(i => {
+            let matchText = i.code.toLowerCase().includes(search) || i.name.toLowerCase().includes(search) || (i.location && i.location.toLowerCase().includes(search));
+            let matchLoc = !loc || i.location === loc;
+            return matchText && matchLoc;
+        });
+
+        if (filtered.length === 0) {
+            listDiv.innerHTML = '<p style="color:#a0aec0; text-align:center;">કોઈ મટિરિયલ મળ્યું નથી.</p>';
             return;
         }
 
         let html = '';
-        inventory.forEach(item => {
-            const isLow = item.stock <= item.minStock;
+        filtered.forEach(item => {
+            let isLow = item.stock <= item.minStock;
             html += `
                 <div class="stock-item">
                     <div>
-                        <strong>${item.name}</strong> (${item.code})<br>
-                        <small style="color:#666;">મિનિમમ: ${item.minStock} ${item.uom}</small>
-                        ${isLow ? '<span class="badge-alert">Low Stock</span>' : ''}
+                        <strong>${item.name}</strong> <span style="color:#718096;">(${item.code})</span><br>
+                        <small>📍 લોકેશન: <b>${item.location || 'N/A'}</b> | Min: ${item.minStock} ${item.uom}</small>
+                        ${isLow ? '<br><span class="badge badge-danger">⚠️ Low Stock Alert</span>' : ''}
                     </div>
-                    <div style="font-size: 1.1rem; font-weight: bold; color: ${isLow ? '#d32f2f' : '#2e7d32'};">
-                        ${item.stock} ${item.uom}
+                    <div style="text-align:right;">
+                        <span style="font-size:1.15rem; font-weight:bold; color:${isLow ? '#e53e3e' : '#276749'};">${item.stock}</span>
+                        <small>${item.uom}</small>
                     </div>
                 </div>
             `;
@@ -177,87 +267,156 @@
         listDiv.innerHTML = html;
     }
 
-    function saveMaster() {
-        const code = document.getElementById('master-code').value.trim();
-        const name = document.getElementById('master-name').value.trim();
-        const uom = document.getElementById('master-uom').value;
-        const minStock = parseFloat(document.getElementById('master-min').value) || 0;
-
-        if (!code || !name) {
-            alert('કૃપા કરીને આઈટમ કોડ અને નામ દાખલ કરો.');
+    // માસ્ટર સેવ
+    function saveMasterItem() {
+        if (currentUser.role === 'Operator') {
+            alert('માત્ર Admin અથવા Supervisor માસ્ટર એડિટ કરી શકે!');
             return;
         }
+        let code = document.getElementById('m-code').value.trim();
+        let name = document.getElementById('m-name').value.trim();
+        let loc = document.getElementById('m-loc').value.trim();
+        let uom = document.getElementById('m-uom').value;
+        let minStock = parseFloat(document.getElementById('m-min').value) || 0;
 
-        const exists = inventory.find(i => i.code.toLowerCase() === code.toLowerCase());
-        if (exists) {
-            alert('આ કોડ પહેલેથી હાજર છે!');
-            return;
-        }
+        if (!code || !name) return alert('કોડ અને નામ જરૂરી છે!');
+        if (inventory.find(i => i.code.toLowerCase() === code.toLowerCase())) return alert('આ કોડ હાજર છે!');
 
-        inventory.push({ code, name, uom, minStock, stock: 0 });
-        saveToStorage();
-        alert('આઈટમ સફળતાપૂર્વક ઉમેરાઈ ગઈ!');
-        document.getElementById('master-code').value = '';
-        document.getElementById('master-name').value = '';
+        inventory.push({ code, name, location: loc, uom, minStock, stock: 0 });
+        saveDB();
+        alert('આઈટમ માસ્ટર સફળતાપૂર્વક ઉમેરાઈ ગઈ!');
+        document.getElementById('m-code').value = '';
+        document.getElementById('m-name').value = '';
     }
 
-    function processStock(type) {
-        const codeId = type === 'IN' ? 'inward-code' : 'outward-code';
-        const qtyId = type === 'IN' ? 'inward-qty' : 'outward-qty';
+    // ટ્રાન્ઝેક્શન (Inward / Outward)
+    function saveTransaction(type) {
+        let code = document.getElementById(type === 'IN' ? 'in-code' : 'out-code').value.trim();
+        let qty = parseFloat(document.getElementById(type === 'IN' ? 'in-qty' : 'out-qty').value);
+        let ref = document.getElementById(type === 'IN' ? 'in-challan' : 'out-slip').value.trim();
+        let party = document.getElementById(type === 'IN' ? 'in-vendor' : 'out-dept').value.trim();
 
-        const code = document.getElementById(codeId).value.trim();
-        const qty = parseFloat(document.getElementById(qtyId).value);
+        if (!code || isNaN(qty) || qty <= 0) return alert('સાચો કોડ અને જથ્થો લખો!');
 
-        if (!code || isNaN(qty) || qty <= 0) {
-            alert('સાચો કોડ અને જથ્થો દાખલ કરો.');
-            return;
+        let item = inventory.find(i => i.code.toLowerCase() === code.toLowerCase());
+        if (!item) return alert('મટિરિયલ મળ્યું નથી! પહેલા માસ્ટરમાં ઉમેરો.');
+
+        if (type === 'OUT' && item.stock < qty) return alert(`સ્ટોક ખૂટે છે! હાજર સ્ટોક: ${item.stock}`);
+
+        item.stock = type === 'IN' ? (item.stock + qty) : (item.stock - qty);
+
+        let docNo = (type === 'IN' ? 'GRN-' : 'ISS-') + Math.floor(1000 + Math.random() * 9000);
+        let logEntry = {
+            docNo, date: new Date().toLocaleString(), type, code, name: item.name, qty, ref, party, user: currentUser.name
+        };
+        logs.push(logEntry);
+        saveDB();
+
+        // સ્લિપ પ્રિન્ટિંગ
+        if (confirm(`${type === 'IN' ? 'GRN' : 'ચલણ'} સફળતાપૂર્વક બન્યું! પ્રિન્ટ સ્લિપ કાઢવી છે?`)) {
+            printSlip(logEntry, item);
         }
+    }
 
-        const item = inventory.find(i => i.code.toLowerCase() === code.toLowerCase());
-        if (!item) {
-            alert('આઈટમ મળી નથી! પહેલા માસ્ટરમાં એન્ટ્રી કરો.');
-            return;
-        }
+    // સ્લિપ પ્રિન્ટ
+    function printSlip(entry, item) {
+        let printDiv = document.getElementById('printArea');
+        printDiv.innerHTML = `
+            <div style="border:2px solid #000; padding:15px; width:320px; margin:auto;">
+                <h3 style="text-align:center; margin:0;">${entry.type === 'IN' ? 'GOODS RECEIPT NOTE (GRN)' : 'STORE ISSUE CHALLAN'}</h3>
+                <hr>
+                <p><b>Doc No:</b> ${entry.docNo}<br>
+                <b>Date:</b> ${entry.date}<br>
+                <b>Item:</b> ${entry.name} (${entry.code})<br>
+                <b>Qty:</b> ${entry.qty} ${item.uom}<br>
+                <b>Location:</b> ${item.location || '-'}<br>
+                <b>Ref/Party:</b> ${entry.ref} / ${entry.party}<br>
+                <b>Operator:</b> ${entry.user}</p>
+                <br><br>
+                <div style="display:flex; justify-content:space-between;">
+                    <span>સ્ટોર સહી</span>
+                    <span>લેનાર સહી</span>
+                </div>
+            </div>
+        `;
+        window.print();
+    }
 
-        if (type === 'OUT' && item.stock < qty) {
-            alert(`પૂરતો સ્ટોક નથી! ઉપલબ્ધ સ્ટોક: ${item.stock}`);
-            return;
-        }
-
-        if (type === 'IN') {
-            item.stock += qty;
-            alert(`ઇનવર્ડ સફળ! નવો સ્ટોક: ${item.stock}`);
+    // સ્ટોક ઓડિટ સેટિંગ્સ
+    function loadAuditDetails() {
+        let code = document.getElementById('audit-code').value.trim();
+        let item = inventory.find(i => i.code.toLowerCase() === code.toLowerCase());
+        let infoDiv = document.getElementById('audit-info');
+        if (item) {
+            infoDiv.style.display = 'block';
+            document.getElementById('audit-name').innerText = item.name;
+            document.getElementById('audit-loc').innerText = item.location || 'N/A';
+            document.getElementById('audit-sys-qty').innerText = `${item.stock} ${item.uom}`;
         } else {
-            item.stock -= qty;
-            alert(`આઉટવર્ડ સફળ! બાકી સ્ટોક: ${item.stock}`);
+            infoDiv.style.display = 'none';
         }
-
-        saveToStorage();
-        document.getElementById(qtyId).value = '';
     }
 
-    function startScanner(targetInputId) {
-        const readerId = targetInputId.includes('inward') ? 'reader-inward' : 
-                         targetInputId.includes('outward') ? 'reader-outward' : 'reader-master';
-        
-        const readerDiv = document.getElementById(readerId);
-        readerDiv.style.display = 'block';
+    function saveAuditAdjustment() {
+        if (currentUser.role === 'Operator') return alert('માત્ર Supervisor અથવા Admin ઓડિટ વેરિફાય કરી શકે!');
+        let code = document.getElementById('audit-code').value.trim();
+        let actual = parseFloat(document.getElementById('audit-actual-qty').value);
+        let remark = document.getElementById('audit-remark').value.trim();
 
-        html5QrCode = new Html5Qrcode(readerId);
+        let item = inventory.find(i => i.code.toLowerCase() === code.toLowerCase());
+        if (!item || isNaN(actual)) return alert('વિગતો બરાબર ભરો!');
+
+        let diff = actual - item.stock;
+        item.stock = actual;
+
+        logs.push({
+            docNo: 'AUDIT-' + Date.now().toString().slice(-4),
+            date: new Date().toLocaleString(),
+            type: 'AUDIT',
+            code: item.code,
+            name: item.name,
+            qty: diff,
+            ref: `Physical: ${actual} (Diff: ${diff})`,
+            party: remark,
+            user: currentUser.name
+        });
+
+        saveDB();
+        alert(`ઓડિટ અપડેટ થયું! તફાવત: ${diff > 0 ? '+' : ''}${diff} ${item.uom}`);
+        document.getElementById('audit-code').value = '';
+        document.getElementById('audit-info').style.display = 'none';
+    }
+
+    // CSV / Excel ડાઉનલોડ
+    function downloadCSV() {
+        let csv = "Item Code,Item Name,Location,UOM,Current Stock,Min Stock\n";
+        inventory.forEach(i => {
+            csv += `"${i.code}","${i.name}","${i.location || ''}","${i.uom}",${i.stock},${i.minStock}\n`;
+        });
+        let blob = new Blob([csv], { type: 'text/csv' });
+        let a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `Store_Stock_Report_${new Date().toISOString().slice(0,10)}.csv`;
+        a.click();
+    }
+
+    // કેમેરા સ્કેનર
+    function startScanner(targetId) {
+        let readerDivId = `reader-${targetId}`;
+        let div = document.getElementById(readerDivId);
+        div.style.display = 'block';
+
+        html5QrCode = new Html5Qrcode(readerDivId);
         html5QrCode.start(
             { facingMode: "environment" },
             { fps: 10, qrbox: { width: 250, height: 250 } },
-            (decodedText) => {
-                document.getElementById(targetInputId).value = decodedText;
-                html5QrCode.stop().then(() => {
-                    readerDiv.style.display = 'none';
-                });
+            (text) => {
+                document.getElementById(targetId).value = text;
+                if(targetId === 'audit-code') loadAuditDetails();
+                html5QrCode.stop().then(() => { div.style.display = 'none'; });
             },
-            (error) => {}
-        ).catch(err => {
-            alert("કેમેરા એક્સેસ ભૂલ: " + err);
-            readerDiv.style.display = 'none';
-        });
+            () => {}
+        ).catch(err => { alert('Camera Error: ' + err); div.style.display = 'none'; });
     }
 
     renderStock();
