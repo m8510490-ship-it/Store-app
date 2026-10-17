@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Enterprise Store ERP - Cloud Synced</title>
-    <!-- Barcode & QR Libraries -->
+    <title>Enterprise Store ERP System - 50 Roles Edition</title>
+    <!-- Barcode Generation & Camera QR/Barcode Scanner -->
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
@@ -24,7 +24,6 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { background-color: var(--bg-main); color: var(--text-main); padding-bottom: 50px; }
 
-        /* Sync Status Banner */
         #syncBanner {
             background: #1e293b;
             color: #94a3b8;
@@ -41,7 +40,6 @@
         .sync-dot.offline { background: #ef4444; }
         @keyframes pulse { 0% { opacity: 0.3; } 50% { opacity: 1; } 100% { opacity: 0.3; } }
 
-        /* Login Screen */
         #loginScreen {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -64,7 +62,6 @@
         .login-box h2 { color: var(--primary); margin-bottom: 6px; font-size: 1.3rem; }
         .login-box p { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 18px; }
 
-        /* Header */
         header { 
             background: linear-gradient(135deg, var(--primary), #1e293b); 
             color: #ffffff; 
@@ -144,7 +141,7 @@
 
         .kpi-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
             gap: 10px;
             margin-bottom: 16px;
         }
@@ -156,7 +153,7 @@
             text-align: center;
         }
         .kpi-val { font-size: 1.25rem; font-weight: 700; margin-top: 4px; }
-        .kpi-lbl { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; }
+        .kpi-lbl { font-size: 0.72rem; color: var(--text-muted); font-weight: 600; }
 
         .form-group { margin-bottom: 12px; text-align: left; }
         label { display: block; margin-bottom: 5px; font-size: 0.82rem; font-weight: 600; color: var(--text-muted); }
@@ -254,7 +251,6 @@
 </head>
 <body>
 
-<!-- SYNC STATUS BANNER -->
 <div id="syncBanner">
     <span class="sync-dot" id="syncDot"></span>
     <span id="syncText">Cloud Sync: Live & Connected</span>
@@ -291,11 +287,11 @@
     </div>
 </div>
 
-<!-- MAIN HEADER -->
 <header>
-    <div class="brand-title">📦 Store ERP System - Pro</div>
+    <div class="brand-title">📦 Store ERP System - Enterprise 50</div>
     <div style="display: flex; gap: 8px;">
         <button onclick="fetchCloudData()" class="btn-header" style="background:#0284c7; color:#fff;">🔄 Sync</button>
+        <button onclick="downloadReorderIndent()" class="btn-header" style="background:#f59e0b; color:#fff;">📑 Indent</button>
         <button onclick="exportToCSV()" class="btn-header" style="background:#059669; color:#fff;">📥 CSV</button>
         <button onclick="logoutUser()" class="btn-header" style="background:#dc2626; color:#fff;">Logout</button>
     </div>
@@ -307,21 +303,22 @@
 </div>
 
 <!-- NAVIGATION TABS -->
-<div class="nav-tabs">
-    <button class="tab-btn active" onclick="switchTab(event, 'stock_master')">📊 Stock Master</button>
-    <button class="tab-btn" onclick="switchTab(event, 'inward')">📥 Inward (GRN)</button>
-    <button class="tab-btn" onclick="switchTab(event, 'outward')">📤 Outward (Issue)</button>
-    <button class="tab-btn" onclick="switchTab(event, 'transfer')">🔄 Bin Transfer</button>
-    <button class="tab-btn" onclick="switchTab(event, 'transactions_log')">📜 Ledger & History</button>
-    <button class="tab-btn" onclick="switchTab(event, 'item_master')">⚙️ Item Master</button>
-    <button class="tab-btn" onclick="switchTab(event, 'audit')">📝 Stock Audit</button>
-    <button class="tab-btn" onclick="switchTab(event, 'backup_manager')">💾 Cloud Settings</button>
-    <button class="tab-btn" onclick="switchTab(event, 'user_master')">👥 User Master</button>
+<div class="nav-tabs" id="navTabsContainer">
+    <button class="tab-btn active" id="tabbtn_stock_master" onclick="switchTab(event, 'stock_master')">📊 Stock Master</button>
+    <button class="tab-btn" id="tabbtn_inward" onclick="switchTab(event, 'inward')">📥 Inward & QC</button>
+    <button class="tab-btn" id="tabbtn_outward" onclick="switchTab(event, 'outward')">📤 Outward (Issue)</button>
+    <button class="tab-btn" id="tabbtn_gate_pass" onclick="switchTab(event, 'gate_pass')">🚛 Gate Pass (RGP/NRGP)</button>
+    <button class="tab-btn" id="tabbtn_transfer" onclick="switchTab(event, 'transfer')">🔄 Bin Transfer</button>
+    <button class="tab-btn" id="tabbtn_transactions_log" onclick="switchTab(event, 'transactions_log')">📜 Ledger & History</button>
+    <button class="tab-btn" id="tabbtn_item_master" onclick="switchTab(event, 'item_master')">⚙️ Item Master</button>
+    <button class="tab-btn" id="tabbtn_audit" onclick="switchTab(event, 'audit')">📝 Stock Audit</button>
+    <button class="tab-btn" id="tabbtn_backup_manager" onclick="switchTab(event, 'backup_manager')">💾 Cloud & Import</button>
+    <button class="tab-btn" id="tabbtn_user_master" onclick="switchTab(event, 'user_master')">👥 User Master (50 Roles)</button>
 </div>
 
 <div class="container">
 
-    <!-- KPI DASHBOARD SUMMARY -->
+    <!-- KPI DASHBOARD -->
     <div class="kpi-grid">
         <div class="kpi-card">
             <div class="kpi-lbl">TOTAL ITEMS</div>
@@ -332,11 +329,11 @@
             <div class="kpi-val" id="kpi_total_val" style="color:var(--success);">₹0</div>
         </div>
         <div class="kpi-card">
-            <div class="kpi-lbl">LOW STOCK ALERTS</div>
+            <div class="kpi-lbl">REORDER ALERTS</div>
             <div class="kpi-val" id="kpi_low_stock" style="color:var(--danger);">0</div>
         </div>
         <div class="kpi-card">
-            <div class="kpi-lbl">TODAY'S IN / OUT</div>
+            <div class="kpi-lbl">TODAY'S ACTIVITY</div>
             <div class="kpi-val" id="kpi_today_activity" style="color:var(--warning); font-size:1.05rem;">0 / 0</div>
         </div>
     </div>
@@ -358,12 +355,12 @@
         </div>
     </div>
 
-    <!-- 2. INWARD / GRN -->
+    <!-- 2. INWARD & QC -->
     <div id="tab-inward" class="tab-content">
         <div class="card">
             <div class="card-title">
-                <span>📥 Material Inward (GRN)</span>
-                <button class="btn-header" style="background:#2563eb; color:#fff;" onclick="startBarcodeScanner('in_code')">📷 Scan Barcode</button>
+                <span>📥 Material Inward & QC Inspection</span>
+                <button class="btn-header" style="background:#2563eb; color:#fff;" onclick="startBarcodeScanner('in_code')">📷 Scan</button>
             </div>
             <div class="form-group">
                 <label>Item Code:</label>
@@ -373,13 +370,19 @@
                 <label>Item Name:</label>
                 <input type="text" id="in_name" placeholder="Auto Fetched Name" readonly style="background:#f8fafc;">
             </div>
-            <div class="form-group">
-                <label>Quantity Inward:</label>
-                <input type="number" id="in_qty" placeholder="Quantity">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+                <div class="form-group">
+                    <label>Accepted Qty (Stock Add):</label>
+                    <input type="number" id="in_qty_acc" placeholder="Passed Qty">
+                </div>
+                <div class="form-group">
+                    <label>Rejected Qty (RTV):</label>
+                    <input type="number" id="in_qty_rej" placeholder="0" value="0">
+                </div>
             </div>
             <div class="form-group">
                 <label>Unit Rate (₹ per Unit):</label>
-                <input type="number" id="in_rate" placeholder="Purchase Price (e.g. 45.00)">
+                <input type="number" id="in_rate" placeholder="Purchase Price">
             </div>
             <div class="form-group">
                 <label>Batch / Lot / Drum No:</label>
@@ -393,7 +396,7 @@
                 <label>Vendor / Supplier:</label>
                 <input type="text" id="in_vendor" placeholder="Supplier Name">
             </div>
-            <button class="btn btn-success" onclick="processTxn('IN')">Submit GRN & Print Slip</button>
+            <button class="btn btn-success" onclick="processInwardQC()">Submit GRN & QC Slip</button>
         </div>
     </div>
 
@@ -402,7 +405,7 @@
         <div class="card">
             <div class="card-title">
                 <span>📤 Material Issue / Dispatch</span>
-                <button class="btn-header" style="background:#2563eb; color:#fff;" onclick="startBarcodeScanner('out_code')">📷 Scan Barcode</button>
+                <button class="btn-header" style="background:#2563eb; color:#fff;" onclick="startBarcodeScanner('out_code')">📷 Scan</button>
             </div>
             <div class="form-group">
                 <label>Item Code:</label>
@@ -432,7 +435,44 @@
         </div>
     </div>
 
-    <!-- 4. BIN TRANSFER -->
+    <!-- 4. GATE PASS -->
+    <div id="tab-gate_pass" class="tab-content">
+        <div class="card">
+            <div class="card-title">🚛 Gate Pass Generation (Dispatch)</div>
+            <div class="form-group">
+                <label>Gate Pass Type:</label>
+                <select id="gp_type">
+                    <option value="NRGP">Non-Returnable Gate Pass (NRGP - Sale/Site)</option>
+                    <option value="RGP">Returnable Gate Pass (RGP - Jobwork/Repair)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Party / Destination Name:</label>
+                <input type="text" id="gp_party" placeholder="Party Name">
+            </div>
+            <div class="form-group">
+                <label>Item Description & Qty:</label>
+                <input type="text" id="gp_items" placeholder="e.g. 50 Nos Inverter Spares / Cable Rolls">
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+                <div class="form-group">
+                    <label>Vehicle No:</label>
+                    <input type="text" id="gp_vehicle" placeholder="e.g. GJ-01-XX-1234">
+                </div>
+                <div class="form-group">
+                    <label>Driver / Transporter:</label>
+                    <input type="text" id="gp_transporter" placeholder="Driver / Carrier Name">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>e-Way Bill / Invoice Ref:</label>
+                <input type="text" id="gp_eway" placeholder="e.g. EWB-99881122">
+            </div>
+            <button class="btn btn-primary" onclick="generateGatePass()">Create & Print Official Gate Pass</button>
+        </div>
+    </div>
+
+    <!-- 5. BIN TRANSFER -->
     <div id="tab-transfer" class="tab-content">
         <div class="card">
             <div class="card-title">🔄 Internal Location / Bin Transfer</div>
@@ -456,7 +496,7 @@
         </div>
     </div>
 
-    <!-- 5. TRANSACTIONS LEDGER WITH FILTERS -->
+    <!-- 6. TRANSACTIONS LEDGER -->
     <div id="tab-transactions_log" class="tab-content">
         <div class="card">
             <div class="card-title">📜 Stock Movement History (Ledger)</div>
@@ -473,6 +513,7 @@
                         <option value="">All Types</option>
                         <option value="IN">Inward (GRN)</option>
                         <option value="OUT">Outward (Issue)</option>
+                        <option value="GATEPASS">Gate Pass</option>
                         <option value="TRANSFER">Transfer</option>
                         <option value="AUDIT">Audit</option>
                     </select>
@@ -500,7 +541,7 @@
         </div>
     </div>
 
-    <!-- 6. ITEM MASTER & STICKER PRINTING -->
+    <!-- 7. ITEM MASTER -->
     <div id="tab-item_master" class="tab-content">
         <div class="card">
             <div class="card-title">⚙️ New Item Registration (Item Master)</div>
@@ -552,7 +593,7 @@
         </div>
     </div>
 
-    <!-- 7. STOCK AUDIT -->
+    <!-- 8. STOCK AUDIT -->
     <div id="tab-audit" class="tab-content">
         <div class="card">
             <div class="card-title">📝 Physical Stock Audit</div>
@@ -576,7 +617,7 @@
         </div>
     </div>
 
-    <!-- 8. BACKUP & CLOUD SETTINGS -->
+    <!-- 9. CLOUD SETTINGS & BULK IMPORT -->
     <div id="tab-backup_manager" class="tab-content">
         <div class="card">
             <div class="card-title">🌐 Google Sheets Cloud API URL</div>
@@ -585,26 +626,32 @@
                 <input type="text" id="cfg_cloud_url" placeholder="https://script.google.com/macros/s/.../exec">
             </div>
             <button class="btn btn-primary" onclick="saveCloudURL()">Save Cloud URL</button>
-            <p style="font-size:0.75rem; color:#64748b; margin-top:8px;">
-                તમારી Google Apps Script URL અહીં સેવ કરો જેથી બધા ફોન આ શીટ સાથે લાઈવ જોડાયેલા રહે.
-            </p>
         </div>
 
         <div class="card">
-            <div class="card-title">💾 Local Backup & Restore (Offline File)</div>
-            <button class="btn btn-backup" onclick="downloadJSONBackup()" style="margin-bottom:12px;">📥 Download Store Backup (.json)</button>
+            <div class="card-title">📤 Bulk Excel / CSV Items Import</div>
+            <p style="font-size:0.8rem; color:#64748b; margin-bottom:10px;">
+                CSV ફોર્મેટ: <b>Code,Name,Category,Location,Rate,UOM,Min,Stock</b>
+            </p>
+            <input type="file" id="csvBulkInput" accept=".csv" style="margin-bottom:10px;">
+            <button class="btn btn-success" onclick="importBulkCSV()">Import Items From CSV</button>
+        </div>
+
+        <div class="card">
+            <div class="card-title">💾 Local Backup & Restore (.json)</div>
+            <button class="btn btn-backup" onclick="downloadJSONBackup()" style="margin-bottom:12px;">📥 Download JSON Backup</button>
             <input type="file" id="backupFileInput" accept=".json" style="margin-bottom:10px;">
             <button class="btn btn-primary" onclick="restoreJSONBackup()">📤 Upload & Restore File</button>
         </div>
     </div>
 
-    <!-- 9. USER MASTER -->
+    <!-- 10. USER MASTER (50 ROLES INCLUDED) -->
     <div id="tab-user_master" class="tab-content">
         <div class="card">
-            <div class="card-title">👥 Register New User (ID & Password Setup)</div>
+            <div class="card-title">👥 Register New User (50 Enterprise Roles)</div>
             <div class="form-group">
                 <label>Full Name:</label>
-                <input type="text" id="u_name" placeholder="e.g. Operator Name">
+                <input type="text" id="u_name" placeholder="e.g. Employee Name">
             </div>
             <div class="form-group">
                 <label>User ID (Login ID):</label>
@@ -615,14 +662,81 @@
                 <input type="password" id="u_password" placeholder="Password set કરો">
             </div>
             <div class="form-group">
-                <label>User Role:</label>
+                <label>User Role (Select from 50 Roles):</label>
                 <select id="u_role">
-                    <option value="Operator">Operator (Inward/Outward only)</option>
-                    <option value="Supervisor">Supervisor (Audit, Transfer & Stock)</option>
-                    <option value="Admin">Admin (Full Access & Masters)</option>
+                    <optgroup label="--- Store & Warehouse Operations ---">
+                        <option value="Store Executive">1. Store Executive</option>
+                        <option value="Store Supervisor">2. Store Supervisor</option>
+                        <option value="Store Assistant">3. Store Assistant</option>
+                        <option value="Warehouse Manager">4. Warehouse Manager</option>
+                        <option value="Raw Material Store Incharge">5. Raw Material Store Incharge</option>
+                        <option value="Finished Goods Store Incharge">6. Finished Goods Store Incharge</option>
+                        <option value="Packing Material Storekeeper">7. Packing Material Storekeeper</option>
+                        <option value="Spares & Consumables Keeper">8. Spares & Consumables Keeper</option>
+                        <option value="Scrap & Rejection Store Incharge">9. Scrap & Rejection Store Incharge</option>
+                        <option value="Bin & Rack Controller">10. Bin & Rack Controller</option>
+                    </optgroup>
+                    <optgroup label="--- Inward & Material Unloading ---">
+                        <option value="Unloading Supervisor">11. Unloading Supervisor</option>
+                        <option value="Material Verification Officer">12. Material Verification Officer</option>
+                        <option value="GRN Operator">13. GRN Operator</option>
+                        <option value="Forklift Operator">14. Forklift Operator</option>
+                        <option value="Dock Controller">15. Dock Controller</option>
+                    </optgroup>
+                    <optgroup label="--- Quality Control & Inspection ---">
+                        <option value="QC Inspector">16. QC Inspector</option>
+                        <option value="QC Supervisor">17. QC Supervisor</option>
+                        <option value="IQC Engineer">18. IQC Engineer</option>
+                        <option value="RTV Officer">19. RTV Officer</option>
+                        <option value="Quarantine Area Incharge">20. Quarantine Area Incharge</option>
+                    </optgroup>
+                    <optgroup label="--- Outward, Dispatch & Logistics ---">
+                        <option value="Dispatch Supervisor">21. Dispatch Supervisor</option>
+                        <option value="Picking & Packing Executive">22. Picking & Packing Executive</option>
+                        <option value="Loading Supervisor">23. Loading Supervisor</option>
+                        <option value="Gate Pass Officer">24. Gate Pass Officer</option>
+                        <option value="Logistics Coordinator">25. Logistics Coordinator</option>
+                        <option value="Export Dispatch Handler">26. Export Dispatch Handler</option>
+                    </optgroup>
+                    <optgroup label="--- Audit & Physical Verification ---">
+                        <option value="Stock Auditor">27. Stock Auditor</option>
+                        <option value="Cycle Counter">28. Cycle Counter</option>
+                        <option value="Inventory Controller">29. Inventory Controller</option>
+                        <option value="Reconciliation Officer">30. Reconciliation Officer</option>
+                    </optgroup>
+                    <optgroup label="--- Security & Gate Control ---">
+                        <option value="Security Officer">31. Security Officer</option>
+                        <option value="Weighbridge Operator">32. Weighbridge Operator</option>
+                        <option value="Security Incharge">33. Security Incharge</option>
+                    </optgroup>
+                    <optgroup label="--- Production & Shop Floor ---">
+                        <option value="Line-1 Production Supervisor">34. Line-1 Production Supervisor</option>
+                        <option value="Line-2 Production Supervisor">35. Line-2 Production Supervisor</option>
+                        <option value="Maintenance Supervisor">36. Maintenance Supervisor</option>
+                        <option value="Shop Floor Material Handler">37. Shop Floor Material Handler</option>
+                        <option value="Rework Supervisor">38. Rework Supervisor</option>
+                        <option value="Project Site Store Incharge">39. Project Site Store Incharge</option>
+                    </optgroup>
+                    <optgroup label="--- Purchase & Procurement ---">
+                        <option value="Purchase Executive">40. Purchase Executive</option>
+                        <option value="Procurement Manager">41. Procurement Manager</option>
+                        <option value="Vendor Follow-up Officer">42. Vendor Follow-up Officer</option>
+                        <option value="Supply Chain Analyst">43. Supply Chain Analyst</option>
+                    </optgroup>
+                    <optgroup label="--- Accounts & Commercial ---">
+                        <option value="Store Accounts Officer">44. Store Accounts Officer</option>
+                        <option value="Bill Booking Clerk">45. Bill Booking Clerk</option>
+                        <option value="Auditor / Viewer">46. Auditor / Viewer (Read-Only)</option>
+                    </optgroup>
+                    <optgroup label="--- IT & Administration ---">
+                        <option value="Plant Admin">47. Plant Admin</option>
+                        <option value="ERP IT Administrator">48. ERP IT Administrator</option>
+                        <option value="User Access Controller">49. User Access Controller</option>
+                        <option value="Admin">50. Admin (Full System Head)</option>
+                    </optgroup>
                 </select>
             </div>
-            <button class="btn btn-primary" onclick="saveUserMaster()">Save User With Password</button>
+            <button class="btn btn-primary" onclick="saveUserMaster()">Save User</button>
         </div>
 
         <div class="card">
@@ -633,12 +747,9 @@
 
 </div>
 
-<!-- Printable Area for Slips & Stickers -->
 <div id="printArea" style="display:none;"></div>
 
 <script>
-    // ===== GOOGLE SHEETS LIVE SYNC URL =====
-    // તમારા Apps Script ની Web App URL અહીં નીચે અવતરણ ચિહ્નો (" ") ની અંદર પેસ્ટ કરો
     let GOOGLE_SCRIPT_URL = localStorage.getItem('erp_cloud_url') || "";
 
     const defaultItems = [
@@ -649,8 +760,11 @@
 
     const defaultUsers = [
         { id: 1, name: "Mehul Pagi", userId: "Mehul Pagi", password: "PAGI2005", role: "Admin" },
-        { id: 2, name: "Store Supervisor", userId: "super", password: "123", role: "Supervisor" },
-        { id: 3, name: "Store Operator", userId: "oper", password: "123", role: "Operator" }
+        { id: 2, name: "Store Supervisor", userId: "super", password: "123", role: "Store Supervisor" },
+        { id: 3, name: "Store Operator", userId: "oper", password: "123", role: "Store Assistant" },
+        { id: 4, name: "QC Chemist", userId: "qc01", password: "123", role: "QC Inspector" },
+        { id: 5, name: "Main Gate Security", userId: "sec01", password: "123", role: "Security Officer" },
+        { id: 6, name: "Internal Auditor", userId: "audit01", password: "123", role: "Auditor / Viewer" }
     ];
 
     let inventory = JSON.parse(localStorage.getItem('erp_final_items')) || defaultItems;
@@ -667,7 +781,7 @@
         txt.innerText = text;
     }
 
-    // CLOUD SYNC FUNCTIONS
+    // CLOUD SYNC
     async function pushToCloud() {
         if (!GOOGLE_SCRIPT_URL) {
             setSyncStatus('offline', 'Local Mode (Cloud URL Not Configured)');
@@ -675,19 +789,14 @@
         }
 
         setSyncStatus('syncing', 'Syncing to Google Cloud...');
-        const payload = {
-            inventory: inventory,
-            users: users,
-            transactions: transactions,
-            lastUpdated: new Date().toISOString()
-        };
+        const payload = { inventory, users, transactions, lastUpdated: new Date().toISOString() };
 
         try {
             await fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
                 mode: 'no-cors',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: "SYNC_ALL", payload: payload })
+                body: JSON.stringify({ action: "SYNC_ALL", payload })
             });
             setSyncStatus('', 'Cloud Synced: Live & Updated');
         } catch (e) {
@@ -697,7 +806,7 @@
 
     async function fetchCloudData() {
         if (!GOOGLE_SCRIPT_URL) return;
-        setSyncStatus('syncing', 'Fetching Latest Data from Cloud...');
+        setSyncStatus('syncing', 'Fetching Data...');
         try {
             const res = await fetch(GOOGLE_SCRIPT_URL);
             const data = await res.json();
@@ -722,10 +831,10 @@
 
     function saveCloudURL() {
         const url = document.getElementById('cfg_cloud_url').value.trim();
-        if (!url) return alert('કૃપા કરીને સાચી URL દાખલ કરો!');
+        if (!url) return alert('સાચી URL દાખલ કરો!');
         GOOGLE_SCRIPT_URL = url;
         localStorage.setItem('erp_cloud_url', url);
-        alert('Cloud URL સેવ થઈ ગઈ છે! હવે તમારો ડેટા લાઈવ સિંક થશે.');
+        alert('Cloud URL સેવ થઈ ગઈ છે!');
         fetchCloudData();
     }
 
@@ -752,8 +861,77 @@
 
         const todayStr = new Date().toLocaleDateString();
         const inCount = transactions.filter(t => t.type === 'IN' && new Date(t.timestamp || Date.now()).toLocaleDateString() === todayStr).length;
-        const outCount = transactions.filter(t => t.type === 'OUT' && new Date(t.timestamp || Date.now()).toLocaleDateString() === todayStr).length;
+        const outCount = transactions.filter(t => (t.type === 'OUT' || t.type === 'GATEPASS') && new Date(t.timestamp || Date.now()).toLocaleDateString() === todayStr).length;
         document.getElementById('kpi_today_activity').innerText = `${inCount} In / ${outCount} Out`;
+    }
+
+    // 50 ROLES ACCESS MATRIX LOGIC
+    function applyRolePermissions() {
+        if (!currentUser) return;
+        const r = currentUser.role || 'Operator';
+
+        // 1. Admin Level Roles (Full Access)
+        const adminRoles = ['Admin', 'Plant Admin', 'ERP IT Administrator', 'User Access Controller'];
+
+        // 2. Supervisory & Store Incharge Roles
+        const supervisorRoles = [
+            'Store Executive', 'Store Supervisor', 'Warehouse Manager', 'Raw Material Store Incharge',
+            'Finished Goods Store Incharge', 'Packing Material Storekeeper', 'Spares & Consumables Keeper',
+            'Scrap & Rejection Store Incharge', 'Bin & Rack Controller', 'Inventory Controller',
+            'Reconciliation Officer', 'Master Data Admin', 'Project Site Store Incharge'
+        ];
+
+        // 3. Inward & Quality Roles
+        const inwardQcRoles = [
+            'Unloading Supervisor', 'Material Verification Officer', 'GRN Operator', 'Dock Controller',
+            'QC Inspector', 'QC Supervisor', 'IQC Engineer', 'RTV Officer', 'Quarantine Area Incharge'
+        ];
+
+        // 4. Dispatch & Gate Operations
+        const dispatchGateRoles = [
+            'Dispatch Supervisor', 'Picking & Packing Executive', 'Loading Supervisor',
+            'Gate Pass Officer', 'Logistics Coordinator', 'Export Dispatch Handler',
+            'Security Officer', 'Weighbridge Operator', 'Security Incharge'
+        ];
+
+        // 5. Audit & Viewer Roles
+        const auditViewerRoles = [
+            'Stock Auditor', 'Cycle Counter', 'Store Accounts Officer', 'Bill Booking Clerk',
+            'Auditor / Viewer', 'Purchase Executive', 'Procurement Manager', 'Vendor Follow-up Officer',
+            'Supply Chain Analyst'
+        ];
+
+        let allowed = ['stock_master'];
+
+        if (adminRoles.includes(r)) {
+            allowed = ['stock_master', 'inward', 'outward', 'gate_pass', 'transfer', 'transactions_log', 'item_master', 'audit', 'backup_manager', 'user_master'];
+        } else if (supervisorRoles.includes(r)) {
+            allowed = ['stock_master', 'inward', 'outward', 'gate_pass', 'transfer', 'transactions_log', 'item_master', 'audit'];
+        } else if (inwardQcRoles.includes(r)) {
+            allowed = ['stock_master', 'inward', 'transactions_log'];
+        } else if (dispatchGateRoles.includes(r)) {
+            allowed = ['stock_master', 'outward', 'gate_pass', 'transactions_log'];
+        } else if (auditViewerRoles.includes(r)) {
+            allowed = ['stock_master', 'transactions_log', 'audit'];
+        } else {
+            // General Operators, Handlers & Helpers
+            allowed = ['stock_master', 'inward', 'outward'];
+        }
+
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            const tabId = btn.id.replace('tabbtn_', '');
+            if (allowed.includes(tabId)) {
+                btn.style.display = 'block';
+            } else {
+                btn.style.display = 'none';
+            }
+        });
+
+        const firstTab = allowed[0];
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        document.getElementById(`tab-${firstTab}`).classList.add('active');
+        document.getElementById(`tabbtn_${firstTab}`).classList.add('active');
     }
 
     function checkLoginStatus() {
@@ -762,6 +940,7 @@
             document.getElementById('lblCurUser').innerText = currentUser.name;
             document.getElementById('lblCurRole').innerText = currentUser.role;
             document.getElementById('lblCurId').innerText = "ID: " + (currentUser.userId || "guest");
+            applyRolePermissions();
         } else {
             document.getElementById('loginScreen').style.display = 'flex';
             document.getElementById('login_userid').value = '';
@@ -788,14 +967,14 @@
             currentUser = match;
             localStorage.setItem('erp_logged_user', JSON.stringify(currentUser));
             checkLoginStatus();
-            alert(`સ્વાગત છે, ${currentUser.name}!`);
+            alert(`સ્વાગત છે, ${currentUser.name}! (${currentUser.role})`);
         } else {
             alert("User ID અથવા Password ખોટો છે!");
         }
     }
 
     function loginDirectWithoutPassword() {
-        currentUser = { id: 999, name: "Guest User", userId: "guest", role: "Operator" };
+        currentUser = { id: 999, name: "Guest User", userId: "guest", role: "Store Assistant" };
         localStorage.setItem('erp_logged_user', JSON.stringify(currentUser));
         checkLoginStatus();
     }
@@ -833,9 +1012,9 @@
                 if (activeScannerTargetInput === 'out_code') autoFillCode('out');
                 if (activeScannerTargetInput === 'tr_code') loadTransferItem();
             },
-            (err) => {}
+            () => {}
         ).catch(err => {
-            alert("કેમેરા ખોલવામાં ભૂલ: " + err);
+            alert("કેમેરા એરર: " + err);
             stopBarcodeScanner();
         });
     }
@@ -853,7 +1032,7 @@
         }
     }
 
-    // STICKER PRINT
+    // BARCODE PRINT
     function printItemBarcode(code) {
         const item = inventory.find(i => i.code === code);
         if (!item) return;
@@ -868,14 +1047,266 @@
                 </div>
             </div>
         `;
-        JsBarcode("#printBarcodeSvg", item.code, {
-            format: "CODE128",
-            width: 1.5,
-            height: 40,
-            displayValue: true,
-            fontSize: 12
-        });
+        JsBarcode("#printBarcodeSvg", item.code, { format: "CODE128", width: 1.5, height: 40, displayValue: true, fontSize: 12 });
         window.print();
+    }
+
+    // INWARD & QC
+    function processInwardQC() {
+        const code = document.getElementById('in_code').value.trim();
+        const accQty = parseFloat(document.getElementById('in_qty_acc').value) || 0;
+        const rejQty = parseFloat(document.getElementById('in_qty_rej').value) || 0;
+        const rate = parseFloat(document.getElementById('in_rate').value) || 0;
+        const batch = document.getElementById('in_batch').value.trim();
+        const ref = document.getElementById('in_challan').value.trim();
+        const vendor = document.getElementById('in_vendor').value.trim();
+
+        if (!code || (accQty <= 0 && rejQty <= 0)) return alert('સાચો કોડ અને જથ્થો દાખલ કરો!');
+        const item = inventory.find(i => i.code.toLowerCase() === code.toLowerCase());
+        if (!item) return alert('આઈટમ માસ્ટરમાં નથી! પહેલા ઉમેરો.');
+
+        if (rate > 0) item.rate = rate;
+        item.stock += accQty;
+
+        const docNo = 'GRN-QC-' + Math.floor(1000 + Math.random() * 9000);
+        const rec = {
+            docNo,
+            date: new Date().toLocaleString(),
+            timestamp: Date.now(),
+            type: 'IN',
+            code: item.code,
+            name: item.name,
+            qty: accQty,
+            rejQty: rejQty,
+            uom: item.uom,
+            batch: batch || '-',
+            ref,
+            party: vendor,
+            user: currentUser ? currentUser.name : 'Unknown'
+        };
+
+        transactions.unshift(rec);
+        saveAll();
+
+        if (confirm(`GRN & QC Completed!\nAccepted: ${accQty} ${item.uom}\nRejected (RTV): ${rejQty} ${item.uom}\nસ્લિપ પ્રિન્ટ કરવી છે?`)) {
+            printQCSlip(rec, item);
+        }
+
+        document.getElementById('in_qty_acc').value = '';
+        document.getElementById('in_qty_rej').value = '0';
+        document.getElementById('in_batch').value = '';
+    }
+
+    function printQCSlip(t, item) {
+        const p = document.getElementById('printArea');
+        p.innerHTML = `
+            <div style="border:2px solid #000; padding:18px; width:330px; margin:auto; font-family:sans-serif;">
+                <h3 style="text-align:center;">GOODS RECEIPT & QC REPORT</h3>
+                <hr style="margin: 8px 0;">
+                <p style="line-height:1.6; font-size:0.88rem;">
+                <b>GRN No:</b> ${t.docNo}<br>
+                <b>Date:</b> ${t.date}<br>
+                <b>Supplier:</b> ${t.party || '-'}<br>
+                <b>Challan/PO:</b> ${t.ref || '-'}<br>
+                <b>Item:</b> ${t.name} (${t.code})<br>
+                <b>Batch/Heat:</b> ${t.batch || '-'}<br>
+                <b style="color:green;">QC Passed (Stock In):</b> ${t.qty} ${item.uom}<br>
+                <b style="color:red;">QC Rejected (RTV):</b> ${t.rejQty} ${item.uom}<br>
+                <b>Inspector:</b> ${t.user}</p>
+                <br><br>
+                <div style="display:flex; justify-content:space-between; font-size:0.85rem;">
+                    <span>QC Signature</span>
+                    <span>Store Receiver</span>
+                </div>
+            </div>
+        `;
+        window.print();
+    }
+
+    // OUTWARD / ISSUE
+    function processTxn(type) {
+        const isIN = type === 'IN';
+        const code = document.getElementById(isIN ? 'in_code' : 'out_code').value.trim();
+        const qty = parseFloat(document.getElementById(isIN ? 'in_qty' : 'out_qty').value);
+        const ref = document.getElementById(isIN ? 'in_challan' : 'out_ref').value.trim();
+        const party = document.getElementById(isIN ? 'in_vendor' : 'out_dept').value.trim();
+        const batch = document.getElementById(isIN ? 'in_batch' : 'out_batch').value.trim();
+
+        if (!code || isNaN(qty) || qty <= 0) return alert('સાચો કોડ અને જથ્થો દાખલ કરો!');
+        const item = inventory.find(i => i.code.toLowerCase() === code.toLowerCase());
+        if (!item) return alert('આઈટમ માસ્ટરમાં નથી! પહેલા ઉમેરો.');
+
+        if (!isIN && item.stock < qty) return alert(`સ્ટોક ઓછો છે! હાજર સ્ટોક: ${item.stock}`);
+
+        item.stock = isIN ? (item.stock + qty) : (item.stock - qty);
+        const docNo = 'ISS-' + Math.floor(1000 + Math.random() * 9000);
+        
+        const rec = { 
+            docNo, 
+            date: new Date().toLocaleString(), 
+            timestamp: Date.now(),
+            type, 
+            code: item.code, 
+            name: item.name, 
+            qty, 
+            uom: item.uom, 
+            batch: batch || '-',
+            ref, 
+            party, 
+            user: currentUser ? currentUser.name : 'Unknown' 
+        };
+        
+        transactions.unshift(rec);
+        saveAll();
+
+        if (confirm(`Issue Challan સેવ થઈ ગયું! પ્રિન્ટ સ્લિપ કાઢવી છે?`)) {
+            printSlip(rec, item);
+        }
+        document.getElementById('out_qty').value = '';
+    }
+
+    function printSlip(t, item) {
+        const p = document.getElementById('printArea');
+        p.innerHTML = `
+            <div style="border:2px solid #000; padding:18px; width:330px; margin:auto; font-family:sans-serif;">
+                <h3 style="text-align:center;">MATERIAL ISSUE CHALLAN</h3>
+                <hr style="margin: 8px 0;">
+                <p style="line-height:1.6; font-size:0.88rem;">
+                <b>Doc No:</b> ${t.docNo}<br>
+                <b>Date:</b> ${t.date}<br>
+                <b>Item:</b> ${t.name} (${t.code})<br>
+                <b>Batch/Drum:</b> ${t.batch || '-'}<br>
+                <b>Qty:</b> ${t.qty} ${item.uom}<br>
+                <b>Location:</b> ${item.location || '-'}<br>
+                <b>Department:</b> ${t.party || '-'}<br>
+                <b>Ref No:</b> ${t.ref || '-'}<br>
+                <b>Issued By:</b> ${t.user}</p>
+                <br><br>
+                <div style="display:flex; justify-content:space-between; font-size:0.85rem;">
+                    <span>Store Signature</span>
+                    <span>Receiver Signature</span>
+                </div>
+            </div>
+        `;
+        window.print();
+    }
+
+    // GATE PASS
+    function generateGatePass() {
+        const type = document.getElementById('gp_type').value;
+        const party = document.getElementById('gp_party').value.trim();
+        const items = document.getElementById('gp_items').value.trim();
+        const vehicle = document.getElementById('gp_vehicle').value.trim();
+        const transporter = document.getElementById('gp_transporter').value.trim();
+        const eway = document.getElementById('gp_eway').value.trim();
+
+        if (!party || !items || !vehicle) return alert('પાર્ટી, આઈટમ અને વ્હીકલ નંબર દાખલ કરો!');
+
+        const docNo = 'GP-' + (type === 'RGP' ? 'RET-' : 'NR-') + Math.floor(1000 + Math.random() * 9000);
+        const rec = {
+            docNo,
+            date: new Date().toLocaleString(),
+            timestamp: Date.now(),
+            type: 'GATEPASS',
+            code: 'DISPATCH',
+            name: items,
+            qty: 1,
+            uom: 'LOT',
+            batch: vehicle,
+            ref: eway || '-',
+            party: party,
+            transporter: transporter,
+            gpType: type,
+            user: currentUser.name
+        };
+
+        transactions.unshift(rec);
+        saveAll();
+
+        const p = document.getElementById('printArea');
+        p.innerHTML = `
+            <div style="border:2px solid #000; padding:20px; width:450px; margin:auto; font-family:sans-serif;">
+                <h2 style="text-align:center; font-size:1.2rem;">ENTERPRISE STORE GATE PASS</h2>
+                <div style="text-align:center; font-weight:bold; color:#2563eb; margin-bottom:8px;">${type === 'RGP' ? 'RETURNABLE GATE PASS (RGP)' : 'NON-RETURNABLE GATE PASS (NRGP)'}</div>
+                <hr>
+                <p style="line-height:1.7; font-size:0.88rem; margin-top:8px;">
+                <b>Gate Pass No:</b> ${docNo}<br>
+                <b>Date & Time:</b> ${rec.date}<br>
+                <b>Consignee / Party:</b> ${party}<br>
+                <b>Vehicle No:</b> ${vehicle}<br>
+                <b>Transporter / Driver:</b> ${transporter || '-'}<br>
+                <b>e-Way Bill No:</b> ${eway || '-'}<br>
+                <b>Material Description:</b> ${items}<br>
+                <b>Prepared By:</b> ${currentUser.name}</p>
+                <br><br><br>
+                <div style="display:flex; justify-content:space-between; font-size:0.8rem;">
+                    <span>Store Officer</span>
+                    <span>Security Check</span>
+                    <span>Driver Sign</span>
+                </div>
+            </div>
+        `;
+        window.print();
+        document.getElementById('gp_party').value = '';
+        document.getElementById('gp_items').value = '';
+        document.getElementById('gp_vehicle').value = '';
+        document.getElementById('gp_transporter').value = '';
+        document.getElementById('gp_eway').value = '';
+    }
+
+    // REORDER / PURCHASE INDENT
+    function downloadReorderIndent() {
+        const lowItems = inventory.filter(i => i.stock <= i.min);
+        if (lowItems.length === 0) return alert('તમામ આઈટમ્સનો સ્ટોક પૂરતો છે! Reorder ની જરૂર નથી.');
+
+        let csv = "Item Code,Item Description,Category,Current Stock,Safety Min Limit,Required Reorder Qty,UOM,Est. Unit Rate,Est. Total Cost\n";
+        lowItems.forEach(i => {
+            const req = (i.min * 2) - i.stock;
+            const cost = req * (i.rate || 0);
+            csv += `"${i.code}","${i.name}","${i.category || ''}",${i.stock},${i.min},${req},"${i.uom}",${i.rate || 0},${cost}\n`;
+        });
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `Purchase_Indent_Reorder_${new Date().toISOString().slice(0,10)}.csv`;
+        link.click();
+    }
+
+    // BULK CSV IMPORT
+    function importBulkCSV() {
+        const fileInput = document.getElementById('csvBulkInput');
+        if (!fileInput.files || fileInput.files.length === 0) return alert('કૃપા કરીને CSV ફાઈલ પસંદ કરો!');
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const text = e.target.result;
+            const lines = text.split('\n').filter(l => l.trim().length > 0);
+            let addedCount = 0;
+
+            for (let i = 1; i < lines.length; i++) {
+                const cols = lines[i].split(',').map(c => c.replace(/"/g, '').trim());
+                if (cols.length >= 2) {
+                    const code = cols[0];
+                    const name = cols[1];
+                    const cat = cols[2] || 'General';
+                    const loc = cols[3] || 'Unassigned';
+                    const rate = parseFloat(cols[4]) || 0;
+                    const uom = cols[5] || 'NOS';
+                    const min = parseFloat(cols[6]) || 10;
+                    const stock = parseFloat(cols[7]) || 0;
+
+                    const exist = inventory.find(x => x.code.toLowerCase() === code.toLowerCase());
+                    if (!exist) {
+                        inventory.push({ code, name, category: cat, location: loc, rate, uom, min, stock });
+                        addedCount++;
+                    }
+                }
+            }
+            saveAll();
+            alert(`${addedCount} નવી આઈટમ્સ સફળતાપૂર્વક ઇમ્પોર્ટ થઈ ગઈ!`);
+        };
+        reader.readAsText(fileInput.files[0]);
     }
 
     // BIN TRANSFER
@@ -894,7 +1325,6 @@
     }
 
     function applyBinTransfer() {
-        if (!currentUser || currentUser.role === 'Operator') return alert('Operator લોકેશન બદલી શકતા નથી!');
         const code = document.getElementById('tr_code').value.trim();
         const toLoc = document.getElementById('tr_to_loc').value.trim();
         const remark = document.getElementById('tr_remark').value.trim();
@@ -978,7 +1408,6 @@
 
     // ITEM MASTER
     function saveItemMaster() {
-        if (!currentUser || currentUser.role === 'Operator') return alert('Operator આઈટમ ઉમેરી શકતા નથી!');
         const code = document.getElementById('im_code').value.trim();
         const name = document.getElementById('im_name').value.trim();
         const cat = document.getElementById('im_cat').value;
@@ -1012,7 +1441,7 @@
                     </div>
                     <div style="display:flex; gap:6px;">
                         <button onclick="printItemBarcode('${item.code}')" class="btn-header" style="background:#0284c7; color:#fff;">🏷️ Sticker</button>
-                        ${currentUser && currentUser.role === 'Admin' ? `<button onclick="deleteItemMaster(${index})" class="btn-header" style="background:#fee2e2; color:#ef4444;">Delete</button>` : ''}
+                        <button onclick="deleteItemMaster(${index})" class="btn-header" style="background:#fee2e2; color:#ef4444;">Delete</button>
                     </div>
                 </div>
             `;
@@ -1036,56 +1465,6 @@
                 document.getElementById('in_rate').value = item.rate || '';
             }
             if (p === 'out') document.getElementById('out_cur_stock').value = `${item.stock} ${item.uom}`;
-        }
-    }
-
-    // TRANSACTIONS
-    function processTxn(type) {
-        const isIN = type === 'IN';
-        const code = document.getElementById(isIN ? 'in_code' : 'out_code').value.trim();
-        const qty = parseFloat(document.getElementById(isIN ? 'in_qty' : 'out_qty').value);
-        const ref = document.getElementById(isIN ? 'in_challan' : 'out_ref').value.trim();
-        const party = document.getElementById(isIN ? 'in_vendor' : 'out_dept').value.trim();
-        const batch = document.getElementById(isIN ? 'in_batch' : 'out_batch').value.trim();
-
-        if (!code || isNaN(qty) || qty <= 0) return alert('સાચો કોડ અને જથ્થો દાખલ કરો!');
-        const item = inventory.find(i => i.code.toLowerCase() === code.toLowerCase());
-        if (!item) return alert('આઈટમ માસ્ટરમાં નથી! પહેલા ઉમેરો.');
-
-        if (!isIN && item.stock < qty) return alert(`સ્ટોક ઓછો છે! હાજર સ્ટોક: ${item.stock}`);
-
-        if (isIN) {
-            const newRate = parseFloat(document.getElementById('in_rate').value);
-            if (!isNaN(newRate) && newRate > 0) item.rate = newRate;
-        }
-
-        item.stock = isIN ? (item.stock + qty) : (item.stock - qty);
-        const docNo = (isIN ? 'GRN-' : 'ISS-') + Math.floor(1000 + Math.random() * 9000);
-        
-        const rec = { 
-            docNo, 
-            date: new Date().toLocaleString(), 
-            timestamp: Date.now(),
-            type, 
-            code: item.code, 
-            name: item.name, 
-            qty, 
-            uom: item.uom,
-            batch: batch || '-',
-            ref, 
-            party, 
-            user: currentUser ? currentUser.name : 'Unknown' 
-        };
-        
-        transactions.unshift(rec);
-        saveAll();
-
-        if (confirm(`${isIN ? 'GRN' : 'Issue Challan'} સેવ થઈ ગયું! પ્રિન્ટ સ્લિપ કાઢવી છે?`)) {
-            printSlip(rec, item);
-        }
-        document.getElementById(isIN ? 'in_qty' : 'out_qty').value = '';
-        if (document.getElementById(isIN ? 'in_batch' : 'out_batch')) {
-            document.getElementById(isIN ? 'in_batch' : 'out_batch').value = '';
         }
     }
 
@@ -1130,32 +1509,6 @@
         tbody.innerHTML = html;
     }
 
-    function printSlip(t, item) {
-        const p = document.getElementById('printArea');
-        p.innerHTML = `
-            <div style="border:2px solid #000; padding:18px; width:330px; margin:auto; font-family:sans-serif;">
-                <h3 style="text-align:center;">${t.type === 'IN' ? 'GOODS RECEIPT NOTE (GRN)' : 'MATERIAL ISSUE CHALLAN'}</h3>
-                <hr style="margin: 8px 0;">
-                <p style="line-height:1.6; font-size:0.88rem;">
-                <b>Doc No:</b> ${t.docNo}<br>
-                <b>Date:</b> ${t.date}<br>
-                <b>Item:</b> ${t.name} (${t.code})<br>
-                <b>Batch/Lot/Drum:</b> ${t.batch || '-'}<br>
-                <b>Qty:</b> ${t.qty} ${item.uom}<br>
-                <b>Location:</b> ${item.location || '-'}<br>
-                <b>Party/Dept:</b> ${t.party || '-'}<br>
-                <b>Ref No:</b> ${t.ref || '-'}<br>
-                <b>Issued/Received By:</b> ${t.user}</p>
-                <br><br>
-                <div style="display:flex; justify-content:space-between; font-size:0.85rem;">
-                    <span>Store Signature</span>
-                    <span>Receiver Signature</span>
-                </div>
-            </div>
-        `;
-        window.print();
-    }
-
     // AUDIT
     function loadAuditItem() {
         const code = document.getElementById('aud_code').value.trim();
@@ -1172,7 +1525,6 @@
     }
 
     function applyAudit() {
-        if (!currentUser || currentUser.role === 'Operator') return alert('માત્ર Supervisor કે Admin જ ઓડિટ કરી શકે!');
         const code = document.getElementById('aud_code').value.trim();
         const actual = parseFloat(document.getElementById('aud_actual_qty').value);
         const remark = document.getElementById('aud_remark').value.trim();
@@ -1206,7 +1558,6 @@
 
     // USER MASTER
     function saveUserMaster() {
-        if (!currentUser || currentUser.role !== 'Admin') return alert('માત્ર Admin જ નવો યુઝર ઉમેરી શકે!');
         const name = document.getElementById('u_name').value.trim();
         const uId = document.getElementById('u_loginid').value.trim();
         const pwd = document.getElementById('u_password').value.trim();
@@ -1217,7 +1568,7 @@
 
         users.push({ id: Date.now(), name, userId: uId, password: pwd, role });
         saveAll();
-        alert('નવો યુઝર ઉમેરાઈ ગયો!');
+        alert(`નવો યુઝર ઉમેરાઈ ગયો! રોલ: ${role}`);
         document.getElementById('u_name').value = '';
         document.getElementById('u_loginid').value = '';
         document.getElementById('u_password').value = '';
@@ -1235,7 +1586,7 @@
                         <small style="color:var(--text-muted);">ID: <b>${u.userId}</b> | Pwd: ***</small>
                     </div>
                     <div>
-                        ${u.userId.toLowerCase() !== 'mehul pagi' ? `<button onclick="deleteUser(${u.id})" class="btn-header" style="background:#fee2e2; color:#ef4444;">Delete</button>` : '<small style="color:green; font-weight:bold;">Main Admin</small>'}
+                        ${u.userId.toLowerCase() !== 'mehul pagi' ? `<button onclick="deleteUser(${u.id})" class="btn-header" style="background:#fee2e2; color:#ef4444;">Delete</button>` : '<small style="color:green; font-weight:bold;">Main Head</small>'}
                     </div>
                 </div>
             `;
@@ -1244,14 +1595,13 @@
     }
 
     function deleteUser(id) {
-        if (!currentUser || currentUser.role !== 'Admin') return alert('માત્ર Admin જ ડિલીટ કરી શકે!');
         if (confirm('આ યુઝરને ડિલીટ કરવો છે?')) {
             users = users.filter(u => u.id !== id);
             saveAll();
         }
     }
 
-    // BACKUP
+    // BACKUP & CSV EXPORT
     function downloadJSONBackup() {
         const fullBackup = { inventory, users, transactions, backupDate: new Date().toISOString() };
         const blob = new Blob([JSON.stringify(fullBackup, null, 2)], { type: "application/json" });
@@ -1293,7 +1643,7 @@
         link.click();
     }
 
-    // INITIAL LOAD
+    // STARTUP
     if (GOOGLE_SCRIPT_URL) {
         document.getElementById('cfg_cloud_url').value = GOOGLE_SCRIPT_URL;
         fetchCloudData();
@@ -1303,7 +1653,6 @@
     renderStockMaster();
     renderItemMasterList();
 
-    // Auto sync every 30 seconds
     setInterval(() => {
         if (GOOGLE_SCRIPT_URL) fetchCloudData();
     }, 30000);
