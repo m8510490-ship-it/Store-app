@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Enterprise Store ERP System</title>
+    <title>Enterprise Store ERP - Cloud Synced</title>
+    <!-- Barcode & QR Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
         :root {
             --primary: #0f172a;
@@ -19,7 +22,24 @@
             --border-color: #e2e8f0;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background-color: var(--bg-main); color: var(--text-main); padding-bottom: 40px; }
+        body { background-color: var(--bg-main); color: var(--text-main); padding-bottom: 50px; }
+
+        /* Sync Status Banner */
+        #syncBanner {
+            background: #1e293b;
+            color: #94a3b8;
+            font-size: 0.75rem;
+            text-align: center;
+            padding: 4px 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+        .sync-dot { width: 8px; height: 8px; border-radius: 50%; background: #10b981; display: inline-block; }
+        .sync-dot.syncing { background: #f59e0b; animation: pulse 1s infinite; }
+        .sync-dot.offline { background: #ef4444; }
+        @keyframes pulse { 0% { opacity: 0.3; } 50% { opacity: 1; } 100% { opacity: 0.3; } }
 
         /* Login Screen */
         #loginScreen {
@@ -48,7 +68,7 @@
         header { 
             background: linear-gradient(135deg, var(--primary), #1e293b); 
             color: #ffffff; 
-            padding: 16px 18px; 
+            padding: 14px 18px; 
             display: flex; 
             justify-content: space-between; 
             align-items: center;
@@ -103,7 +123,7 @@
             background: #f8fafc; 
         }
 
-        .container { padding: 16px; max-width: 850px; margin: auto; }
+        .container { padding: 16px; max-width: 950px; margin: auto; }
         .card { 
             background: var(--card-bg); 
             padding: 18px; 
@@ -122,26 +142,39 @@
             align-items: center; 
         }
 
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .kpi-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .kpi-val { font-size: 1.25rem; font-weight: 700; margin-top: 4px; }
+        .kpi-lbl { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; }
+
         .form-group { margin-bottom: 12px; text-align: left; }
         label { display: block; margin-bottom: 5px; font-size: 0.82rem; font-weight: 600; color: var(--text-muted); }
         input, select { 
             width: 100%; 
-            padding: 11px 13px; 
+            padding: 10px 12px; 
             border: 1px solid var(--border-color); 
             border-radius: 8px; 
-            font-size: 0.95rem; 
+            font-size: 0.92rem; 
         }
-        input:focus, select:focus {
-            outline: none;
-            border-color: var(--primary-accent);
-        }
+        input:focus, select:focus { outline: none; border-color: var(--primary-accent); }
 
         .btn { 
             width: 100%; 
-            padding: 12px; 
+            padding: 11px; 
             border: none; 
             border-radius: 8px; 
-            font-size: 0.95rem; 
+            font-size: 0.92rem; 
             font-weight: 600; 
             cursor: pointer; 
             margin-top: 6px; 
@@ -177,9 +210,40 @@
             border-radius: 4px; 
             font-weight: 700; 
         }
+        .tag-badge {
+            background: #f1f5f9;
+            color: #475569;
+            font-size: 0.72rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .table-responsive { width: 100%; overflow-x: auto; }
+        table.erp-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; text-align: left; }
+        table.erp-table th, table.erp-table td { padding: 9px 10px; border-bottom: 1px solid var(--border-color); }
+        table.erp-table th { background: #f8fafc; color: var(--text-muted); font-weight: 600; white-space: nowrap; }
 
         .tab-content { display: none; }
         .tab-content.active { display: block; }
+
+        #scannerModal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+        }
+        .scanner-card {
+            background: #fff;
+            width: 100%;
+            max-width: 450px;
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+        }
 
         @media print {
             body * { visibility: hidden; }
@@ -190,12 +254,17 @@
 </head>
 <body>
 
-<!-- LOGIN MODAL (Blank Inputs) -->
+<!-- SYNC STATUS BANNER -->
+<div id="syncBanner">
+    <span class="sync-dot" id="syncDot"></span>
+    <span id="syncText">Cloud Sync: Live & Connected</span>
+</div>
+
+<!-- LOGIN MODAL -->
 <div id="loginScreen">
     <div class="login-box">
         <h2>📦 Store ERP Login</h2>
         <p>Login કરો અથવા Direct Access મેળવો</p>
-        
         <div class="form-group">
             <label>User ID:</label>
             <input type="text" id="login_userid" placeholder="User ID દાખલ કરો" autocomplete="off">
@@ -205,19 +274,28 @@
             <input type="password" id="login_password" placeholder="Password દાખલ કરો" autocomplete="off">
         </div>
         <button class="btn btn-primary" onclick="loginWithCredentials()">Login Karo</button>
-
         <div style="margin: 15px 0 10px; border-top: 1px solid #e2e8f0; position: relative;">
-            <span style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: #fff; padding: 0 8px; font-size: 0.75rem; color: #64748b;">ATHVA</span>
+            <span style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: #fff; padding: 0 8px; font-size: 0.75rem; color: #64748b;">અથવા</span>
         </div>
-
         <button class="btn btn-guest" onclick="loginDirectWithoutPassword()">⚡ Password Vagar Khola (Fast Access)</button>
+    </div>
+</div>
+
+<!-- CAMERA SCANNER MODAL -->
+<div id="scannerModal">
+    <div class="scanner-card">
+        <h3 style="margin-bottom: 8px;">📷 Live Barcode / QR Scanner</h3>
+        <p style="font-size:0.8rem; color:#64748b; margin-bottom:12px;">બારકોડ કેમેરા સામે રાખો</p>
+        <div id="cameraPreview" style="width: 100%; height: 260px; background:#000; border-radius:8px; overflow:hidden;"></div>
+        <button class="btn btn-danger" style="margin-top:12px;" onclick="stopBarcodeScanner()">Close Scanner</button>
     </div>
 </div>
 
 <!-- MAIN HEADER -->
 <header>
-    <div class="brand-title">📦 Store ERP System</div>
+    <div class="brand-title">📦 Store ERP System - Pro</div>
     <div style="display: flex; gap: 8px;">
+        <button onclick="fetchCloudData()" class="btn-header" style="background:#0284c7; color:#fff;">🔄 Sync</button>
         <button onclick="exportToCSV()" class="btn-header" style="background:#059669; color:#fff;">📥 CSV</button>
         <button onclick="logoutUser()" class="btn-header" style="background:#dc2626; color:#fff;">Logout</button>
     </div>
@@ -230,16 +308,38 @@
 
 <!-- NAVIGATION TABS -->
 <div class="nav-tabs">
-    <button class="tab-btn active" onclick="switchTab('stock_master')">📊 Stock Master</button>
-    <button class="tab-btn" onclick="switchTab('item_master')">⚙️ Item Master</button>
-    <button class="tab-btn" onclick="switchTab('inward')">📥 Inward (GRN)</button>
-    <button class="tab-btn" onclick="switchTab('outward')">📤 Outward (Issue)</button>
-    <button class="tab-btn" onclick="switchTab('audit')">📝 Stock Audit</button>
-    <button class="tab-btn" onclick="switchTab('backup_manager')">💾 Backup & Save</button>
-    <button class="tab-btn" onclick="switchTab('user_master')">👥 User Master (20+)</button>
+    <button class="tab-btn active" onclick="switchTab(event, 'stock_master')">📊 Stock Master</button>
+    <button class="tab-btn" onclick="switchTab(event, 'inward')">📥 Inward (GRN)</button>
+    <button class="tab-btn" onclick="switchTab(event, 'outward')">📤 Outward (Issue)</button>
+    <button class="tab-btn" onclick="switchTab(event, 'transfer')">🔄 Bin Transfer</button>
+    <button class="tab-btn" onclick="switchTab(event, 'transactions_log')">📜 Ledger & History</button>
+    <button class="tab-btn" onclick="switchTab(event, 'item_master')">⚙️ Item Master</button>
+    <button class="tab-btn" onclick="switchTab(event, 'audit')">📝 Stock Audit</button>
+    <button class="tab-btn" onclick="switchTab(event, 'backup_manager')">💾 Cloud Settings</button>
+    <button class="tab-btn" onclick="switchTab(event, 'user_master')">👥 User Master</button>
 </div>
 
 <div class="container">
+
+    <!-- KPI DASHBOARD SUMMARY -->
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <div class="kpi-lbl">TOTAL ITEMS</div>
+            <div class="kpi-val" id="kpi_total_items" style="color:var(--primary-accent);">0</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-lbl">TOTAL VALUATION</div>
+            <div class="kpi-val" id="kpi_total_val" style="color:var(--success);">₹0</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-lbl">LOW STOCK ALERTS</div>
+            <div class="kpi-val" id="kpi_low_stock" style="color:var(--danger);">0</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-lbl">TODAY'S IN / OUT</div>
+            <div class="kpi-val" id="kpi_today_activity" style="color:var(--warning); font-size:1.05rem;">0 / 0</div>
+        </div>
+    </div>
 
     <!-- 1. STOCK MASTER -->
     <div id="tab-stock_master" class="tab-content active">
@@ -258,7 +358,149 @@
         </div>
     </div>
 
-    <!-- 2. ITEM MASTER -->
+    <!-- 2. INWARD / GRN -->
+    <div id="tab-inward" class="tab-content">
+        <div class="card">
+            <div class="card-title">
+                <span>📥 Material Inward (GRN)</span>
+                <button class="btn-header" style="background:#2563eb; color:#fff;" onclick="startBarcodeScanner('in_code')">📷 Scan Barcode</button>
+            </div>
+            <div class="form-group">
+                <label>Item Code:</label>
+                <input type="text" id="in_code" placeholder="Enter or Scan Code" onchange="autoFillCode('in')">
+            </div>
+            <div class="form-group">
+                <label>Item Name:</label>
+                <input type="text" id="in_name" placeholder="Auto Fetched Name" readonly style="background:#f8fafc;">
+            </div>
+            <div class="form-group">
+                <label>Quantity Inward:</label>
+                <input type="number" id="in_qty" placeholder="Quantity">
+            </div>
+            <div class="form-group">
+                <label>Unit Rate (₹ per Unit):</label>
+                <input type="number" id="in_rate" placeholder="Purchase Price (e.g. 45.00)">
+            </div>
+            <div class="form-group">
+                <label>Batch / Lot / Drum No:</label>
+                <input type="text" id="in_batch" placeholder="e.g. BATCH-2026-X1">
+            </div>
+            <div class="form-group">
+                <label>PO / Invoice / Challan No:</label>
+                <input type="text" id="in_challan" placeholder="e.g. PO-8841">
+            </div>
+            <div class="form-group">
+                <label>Vendor / Supplier:</label>
+                <input type="text" id="in_vendor" placeholder="Supplier Name">
+            </div>
+            <button class="btn btn-success" onclick="processTxn('IN')">Submit GRN & Print Slip</button>
+        </div>
+    </div>
+
+    <!-- 3. OUTWARD / ISSUE -->
+    <div id="tab-outward" class="tab-content">
+        <div class="card">
+            <div class="card-title">
+                <span>📤 Material Issue / Dispatch</span>
+                <button class="btn-header" style="background:#2563eb; color:#fff;" onclick="startBarcodeScanner('out_code')">📷 Scan Barcode</button>
+            </div>
+            <div class="form-group">
+                <label>Item Code:</label>
+                <input type="text" id="out_code" placeholder="Enter or Scan Code" onchange="autoFillCode('out')">
+            </div>
+            <div class="form-group">
+                <label>Available Current Stock:</label>
+                <input type="text" id="out_cur_stock" placeholder="0" readonly style="background:#f8fafc;">
+            </div>
+            <div class="form-group">
+                <label>Quantity Issue:</label>
+                <input type="number" id="out_qty" placeholder="Quantity">
+            </div>
+            <div class="form-group">
+                <label>Issue to Batch / Work Order:</label>
+                <input type="text" id="out_batch" placeholder="e.g. Line-1 / Work Order #44">
+            </div>
+            <div class="form-group">
+                <label>Department / Line:</label>
+                <input type="text" id="out_dept" placeholder="Production / Dispatch / Maintenance">
+            </div>
+            <div class="form-group">
+                <label>Issue Slip / Reference No:</label>
+                <input type="text" id="out_ref" placeholder="e.g. ISS-104">
+            </div>
+            <button class="btn btn-danger" onclick="processTxn('OUT')">Issue Material & Print</button>
+        </div>
+    </div>
+
+    <!-- 4. BIN TRANSFER -->
+    <div id="tab-transfer" class="tab-content">
+        <div class="card">
+            <div class="card-title">🔄 Internal Location / Bin Transfer</div>
+            <div class="form-group">
+                <label>Item Code:</label>
+                <input type="text" id="tr_code" placeholder="Enter Item Code" onchange="loadTransferItem()">
+            </div>
+            <div id="tr_info" style="display:none; background:#f1f5f9; padding:10px; border-radius:8px; margin-bottom:12px; font-size:0.85rem;">
+                <div>Item: <strong id="tr_name">-</strong></div>
+                <div>Current Location: <strong id="tr_from_loc" style="color:var(--danger);">-</strong> | Stock: <strong id="tr_stock">-</strong></div>
+            </div>
+            <div class="form-group">
+                <label>New Rack / Bin Location:</label>
+                <input type="text" id="tr_to_loc" placeholder="e.g. Rack-B2, Bin-04">
+            </div>
+            <div class="form-group">
+                <label>Transfer Reason / Note:</label>
+                <input type="text" id="tr_remark" placeholder="e.g. 5S Re-layout / Space Optimization">
+            </div>
+            <button class="btn btn-primary" onclick="applyBinTransfer()">Update Item Location</button>
+        </div>
+    </div>
+
+    <!-- 5. TRANSACTIONS LEDGER WITH FILTERS -->
+    <div id="tab-transactions_log" class="tab-content">
+        <div class="card">
+            <div class="card-title">📜 Stock Movement History (Ledger)</div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:12px;">
+                <div>
+                    <label>Filter by Item:</label>
+                    <select id="flt_ledger_item" onchange="renderLedger()">
+                        <option value="">All Items</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Filter by Type:</label>
+                    <select id="flt_ledger_type" onchange="renderLedger()">
+                        <option value="">All Types</option>
+                        <option value="IN">Inward (GRN)</option>
+                        <option value="OUT">Outward (Issue)</option>
+                        <option value="TRANSFER">Transfer</option>
+                        <option value="AUDIT">Audit</option>
+                    </select>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="erp-table">
+                    <thead>
+                        <tr>
+                            <th>Doc No</th>
+                            <th>Type</th>
+                            <th>Date & Time</th>
+                            <th>Item Details</th>
+                            <th>Batch/Ref</th>
+                            <th>Qty</th>
+                            <th>Party / Remark</th>
+                            <th>User</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ledgerTableBody">
+                        <tr><td colspan="8" style="text-align:center;">No records found.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. ITEM MASTER & STICKER PRINTING -->
     <div id="tab-item_master" class="tab-content">
         <div class="card">
             <div class="card-title">⚙️ New Item Registration (Item Master)</div>
@@ -284,6 +526,10 @@
                 <input type="text" id="im_loc" placeholder="e.g. Rack-A1, Bin-03">
             </div>
             <div class="form-group">
+                <label>Standard Unit Rate (₹):</label>
+                <input type="number" id="im_rate" placeholder="e.g. 50">
+            </div>
+            <div class="form-group">
                 <label>Unit of Measure (UOM):</label>
                 <select id="im_uom">
                     <option value="NOS">NOS</option>
@@ -306,63 +552,7 @@
         </div>
     </div>
 
-    <!-- 3. INWARD / GRN -->
-    <div id="tab-inward" class="tab-content">
-        <div class="card">
-            <div class="card-title">📥 Material Inward (GRN)</div>
-            <div class="form-group">
-                <label>Item Code:</label>
-                <input type="text" id="in_code" placeholder="Enter Code" onchange="autoFillCode('in')">
-            </div>
-            <div class="form-group">
-                <label>Item Name:</label>
-                <input type="text" id="in_name" placeholder="Auto Fetched Name" readonly style="background:#f8fafc;">
-            </div>
-            <div class="form-group">
-                <label>Quantity Inward:</label>
-                <input type="number" id="in_qty" placeholder="Quantity">
-            </div>
-            <div class="form-group">
-                <label>PO / Challan No:</label>
-                <input type="text" id="in_challan" placeholder="e.g. PO-8841">
-            </div>
-            <div class="form-group">
-                <label>Vendor / Supplier:</label>
-                <input type="text" id="in_vendor" placeholder="Supplier Name">
-            </div>
-            <button class="btn btn-success" onclick="processTxn('IN')">Submit GRN & Print</button>
-        </div>
-    </div>
-
-    <!-- 4. OUTWARD / ISSUE -->
-    <div id="tab-outward" class="tab-content">
-        <div class="card">
-            <div class="card-title">📤 Material Issue / Dispatch</div>
-            <div class="form-group">
-                <label>Item Code:</label>
-                <input type="text" id="out_code" placeholder="Enter Code" onchange="autoFillCode('out')">
-            </div>
-            <div class="form-group">
-                <label>Available Current Stock:</label>
-                <input type="text" id="out_cur_stock" placeholder="0" readonly style="background:#f8fafc;">
-            </div>
-            <div class="form-group">
-                <label>Quantity Issue:</label>
-                <input type="number" id="out_qty" placeholder="Quantity">
-            </div>
-            <div class="form-group">
-                <label>Department / Line:</label>
-                <input type="text" id="out_dept" placeholder="Production / Dispatch">
-            </div>
-            <div class="form-group">
-                <label>Issue Slip / Reference No:</label>
-                <input type="text" id="out_ref" placeholder="e.g. ISS-104">
-            </div>
-            <button class="btn btn-danger" onclick="processTxn('OUT')">Issue Material & Print</button>
-        </div>
-    </div>
-
-    <!-- 5. STOCK AUDIT -->
+    <!-- 7. STOCK AUDIT -->
     <div id="tab-audit" class="tab-content">
         <div class="card">
             <div class="card-title">📝 Physical Stock Audit</div>
@@ -386,24 +576,29 @@
         </div>
     </div>
 
-    <!-- 6. BACKUP & RESTORE -->
+    <!-- 8. BACKUP & CLOUD SETTINGS -->
     <div id="tab-backup_manager" class="tab-content">
         <div class="card">
-            <div class="card-title">💾 Permanent Data Backup (Save File)</div>
-            <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:14px;">
-                તમારો ડેટા સેવ રાખવા માટે બેકઅપ ફાઈલ ડાઉનલોડ કરી રાખો:
+            <div class="card-title">🌐 Google Sheets Cloud API URL</div>
+            <div class="form-group">
+                <label>Current Web App URL:</label>
+                <input type="text" id="cfg_cloud_url" placeholder="https://script.google.com/macros/s/.../exec">
+            </div>
+            <button class="btn btn-primary" onclick="saveCloudURL()">Save Cloud URL</button>
+            <p style="font-size:0.75rem; color:#64748b; margin-top:8px;">
+                તમારી Google Apps Script URL અહીં સેવ કરો જેથી બધા ફોન આ શીટ સાથે લાઈવ જોડાયેલા રહે.
             </p>
-            <button class="btn btn-backup" onclick="downloadJSONBackup()">📥 Download Store Backup File (.json)</button>
         </div>
 
         <div class="card">
-            <div class="card-title">📂 Restore / Load Backup File</div>
+            <div class="card-title">💾 Local Backup & Restore (Offline File)</div>
+            <button class="btn btn-backup" onclick="downloadJSONBackup()" style="margin-bottom:12px;">📥 Download Store Backup (.json)</button>
             <input type="file" id="backupFileInput" accept=".json" style="margin-bottom:10px;">
-            <button class="btn btn-primary" onclick="restoreJSONBackup()">📤 Upload & Restore Data</button>
+            <button class="btn btn-primary" onclick="restoreJSONBackup()">📤 Upload & Restore File</button>
         </div>
     </div>
 
-    <!-- 7. USER MASTER -->
+    <!-- 9. USER MASTER -->
     <div id="tab-user_master" class="tab-content">
         <div class="card">
             <div class="card-title">👥 Register New User (ID & Password Setup)</div>
@@ -423,7 +618,7 @@
                 <label>User Role:</label>
                 <select id="u_role">
                     <option value="Operator">Operator (Inward/Outward only)</option>
-                    <option value="Supervisor">Supervisor (Audit & Stock)</option>
+                    <option value="Supervisor">Supervisor (Audit, Transfer & Stock)</option>
                     <option value="Admin">Admin (Full Access & Masters)</option>
                 </select>
             </div>
@@ -438,13 +633,18 @@
 
 </div>
 
+<!-- Printable Area for Slips & Stickers -->
 <div id="printArea" style="display:none;"></div>
 
 <script>
+    // ===== GOOGLE SHEETS LIVE SYNC URL =====
+    // તમારા Apps Script ની Web App URL અહીં નીચે અવતરણ ચિહ્નો (" ") ની અંદર પેસ્ટ કરો
+    let GOOGLE_SCRIPT_URL = localStorage.getItem('erp_cloud_url') || "";
+
     const defaultItems = [
-        { code: "ITM-001", name: "Solar DC Cable 4 sq mm", category: "Raw Material", location: "Rack-A1", uom: "MTR", min: 100, stock: 500 },
-        { code: "ITM-002", name: "MC4 Connectors Male/Female", category: "Raw Material", location: "Bin-B2", uom: "SET", min: 50, stock: 40 },
-        { code: "ITM-003", name: "Aluminium Frame 540W", category: "Finished Goods", location: "Rack-C1", uom: "NOS", min: 200, stock: 750 }
+        { code: "ITM-001", name: "Solar DC Cable 4 sq mm", category: "Raw Material", location: "Rack-A1", uom: "MTR", min: 100, stock: 500, rate: 35 },
+        { code: "ITM-002", name: "MC4 Connectors Male/Female", category: "Raw Material", location: "Bin-B2", uom: "SET", min: 50, stock: 40, rate: 22 },
+        { code: "ITM-003", name: "Aluminium Frame 540W", category: "Finished Goods", location: "Rack-C1", uom: "NOS", min: 200, stock: 750, rate: 650 }
     ];
 
     const defaultUsers = [
@@ -457,14 +657,103 @@
     let users = JSON.parse(localStorage.getItem('erp_final_users')) || defaultUsers;
     let transactions = JSON.parse(localStorage.getItem('erp_final_txns')) || [];
     let currentUser = JSON.parse(localStorage.getItem('erp_logged_user')) || null;
+    let html5QrCodeScanner = null;
+    let activeScannerTargetInput = null;
+
+    function setSyncStatus(status, text) {
+        const dot = document.getElementById('syncDot');
+        const txt = document.getElementById('syncText');
+        dot.className = 'sync-dot ' + status;
+        txt.innerText = text;
+    }
+
+    // CLOUD SYNC FUNCTIONS
+    async function pushToCloud() {
+        if (!GOOGLE_SCRIPT_URL) {
+            setSyncStatus('offline', 'Local Mode (Cloud URL Not Configured)');
+            return;
+        }
+
+        setSyncStatus('syncing', 'Syncing to Google Cloud...');
+        const payload = {
+            inventory: inventory,
+            users: users,
+            transactions: transactions,
+            lastUpdated: new Date().toISOString()
+        };
+
+        try {
+            await fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: "SYNC_ALL", payload: payload })
+            });
+            setSyncStatus('', 'Cloud Synced: Live & Updated');
+        } catch (e) {
+            setSyncStatus('offline', 'Sync Error: Check Internet');
+        }
+    }
+
+    async function fetchCloudData() {
+        if (!GOOGLE_SCRIPT_URL) return;
+        setSyncStatus('syncing', 'Fetching Latest Data from Cloud...');
+        try {
+            const res = await fetch(GOOGLE_SCRIPT_URL);
+            const data = await res.json();
+            if (data && data.inventory) {
+                inventory = data.inventory;
+                if (data.users) users = data.users;
+                if (data.transactions) transactions = data.transactions;
+                localStorage.setItem('erp_final_items', JSON.stringify(inventory));
+                localStorage.setItem('erp_final_users', JSON.stringify(users));
+                localStorage.setItem('erp_final_txns', JSON.stringify(transactions));
+                updateDashboardKPI();
+                renderStockMaster();
+                renderItemMasterList();
+                renderUserList();
+                renderLedger();
+                setSyncStatus('', 'Cloud Synced: Up to date');
+            }
+        } catch (err) {
+            setSyncStatus('offline', 'Offline (Using Local Data)');
+        }
+    }
+
+    function saveCloudURL() {
+        const url = document.getElementById('cfg_cloud_url').value.trim();
+        if (!url) return alert('કૃપા કરીને સાચી URL દાખલ કરો!');
+        GOOGLE_SCRIPT_URL = url;
+        localStorage.setItem('erp_cloud_url', url);
+        alert('Cloud URL સેવ થઈ ગઈ છે! હવે તમારો ડેટા લાઈવ સિંક થશે.');
+        fetchCloudData();
+    }
 
     function saveAll() {
         localStorage.setItem('erp_final_items', JSON.stringify(inventory));
         localStorage.setItem('erp_final_users', JSON.stringify(users));
         localStorage.setItem('erp_final_txns', JSON.stringify(transactions));
+        updateDashboardKPI();
         renderStockMaster();
         renderItemMasterList();
         renderUserList();
+        renderLedger();
+        pushToCloud();
+    }
+
+    function updateDashboardKPI() {
+        document.getElementById('kpi_total_items').innerText = inventory.length;
+        const lowStock = inventory.filter(i => i.stock <= i.min).length;
+        document.getElementById('kpi_low_stock').innerText = lowStock;
+
+        let totalValuation = 0;
+        inventory.forEach(i => totalValuation += (i.stock * (i.rate || 0)));
+        document.getElementById('kpi_total_val').innerText = '₹' + totalValuation.toLocaleString('en-IN');
+
+        const todayStr = new Date().toLocaleDateString();
+        const inCount = transactions.filter(t => t.type === 'IN' && new Date(t.timestamp || Date.now()).toLocaleDateString() === todayStr).length;
+        const outCount = transactions.filter(t => t.type === 'OUT' && new Date(t.timestamp || Date.now()).toLocaleDateString() === todayStr).length;
+        document.getElementById('kpi_today_activity').innerText = `${inCount} In / ${outCount} Out`;
     }
 
     function checkLoginStatus() {
@@ -484,12 +773,8 @@
         const uId = document.getElementById('login_userid').value.trim();
         const pwd = document.getElementById('login_password').value.trim();
 
-        if (!uId || !pwd) {
-            alert('કૃપા કરીને User ID અને Password બંને દાખલ કરો!');
-            return;
-        }
+        if (!uId || !pwd) return alert('User ID અને Password બંને દાખલ કરો!');
 
-        // Direct Master Admin Check
         if (uId.toLowerCase() === "mehul pagi" && pwd === "PAGI2005") {
             currentUser = { id: 1, name: "Mehul Pagi", userId: "Mehul Pagi", role: "Admin" };
             localStorage.setItem('erp_logged_user', JSON.stringify(currentUser));
@@ -521,61 +806,128 @@
         checkLoginStatus();
     }
 
-    function switchTab(id) {
+    function switchTab(evt, id) {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
         document.getElementById(`tab-${id}`).classList.add('active');
-        event.target.classList.add('active');
+        if (evt && evt.currentTarget) evt.currentTarget.classList.add('active');
+
         if (id === 'stock_master') renderStockMaster();
+        if (id === 'transactions_log') renderLedger();
         if (id === 'item_master') renderItemMasterList();
         if (id === 'user_master') renderUserList();
     }
 
-    // USER MASTER
-    function saveUserMaster() {
-        if (!currentUser || currentUser.role !== 'Admin') return alert('માત્ર Admin જ નવો યુઝર ઉમેરી શકે!');
-        const name = document.getElementById('u_name').value.trim();
-        const uId = document.getElementById('u_loginid').value.trim();
-        const pwd = document.getElementById('u_password').value.trim();
-        const role = document.getElementById('u_role').value;
-
-        if (!name || !uId || !pwd) return alert('Name, User ID અને Password જરૂરી છે!');
-        if (users.find(u => u.userId.toLowerCase() === uId.toLowerCase())) return alert('આ User ID પહેલાથી હાજર છે!');
-
-        users.push({ id: Date.now(), name, userId: uId, password: pwd, role });
-        saveAll();
-        alert('નવો યુઝર સફળતાપૂર્વક ઉમેરાઈ ગયો!');
-        document.getElementById('u_name').value = '';
-        document.getElementById('u_loginid').value = '';
-        document.getElementById('u_password').value = '';
-    }
-
-    function renderUserList() {
-        const container = document.getElementById('userListContainer');
-        document.getElementById('userCount').innerText = users.length;
-        let html = '';
-        users.forEach(u => {
-            html += `
-                <div class="data-row">
-                    <div>
-                        <strong>${u.name}</strong> <span class="role-pill">${u.role}</span><br>
-                        <small style="color:var(--text-muted);">ID: <b>${u.userId}</b> | Pwd: ***</small>
-                    </div>
-                    <div>
-                        ${u.userId.toLowerCase() !== 'mehul pagi' ? `<button onclick="deleteUser(${u.id})" style="color:red; background:none; border:none; font-weight:bold; cursor:pointer;">Delete</button>` : '<small style="color:green; font-weight:bold;">Main Admin</small>'}
-                    </div>
-                </div>
-            `;
+    // SCANNER
+    function startBarcodeScanner(targetInputId) {
+        activeScannerTargetInput = targetInputId;
+        document.getElementById('scannerModal').style.display = 'flex';
+        html5QrCodeScanner = new Html5Qrcode("cameraPreview");
+        html5QrCodeScanner.start(
+            { facingMode: "environment" },
+            { fps: 10, qrbox: { width: 250, height: 150 } },
+            (decodedText) => {
+                document.getElementById(activeScannerTargetInput).value = decodedText.trim();
+                stopBarcodeScanner();
+                if (activeScannerTargetInput === 'in_code') autoFillCode('in');
+                if (activeScannerTargetInput === 'out_code') autoFillCode('out');
+                if (activeScannerTargetInput === 'tr_code') loadTransferItem();
+            },
+            (err) => {}
+        ).catch(err => {
+            alert("કેમેરા ખોલવામાં ભૂલ: " + err);
+            stopBarcodeScanner();
         });
-        container.innerHTML = html;
     }
 
-    function deleteUser(id) {
-        if (!currentUser || currentUser.role !== 'Admin') return alert('માત્ર Admin જ ડિલીટ કરી શકે!');
-        if (confirm('આ યુઝરને ડિલીટ કરવો છે?')) {
-            users = users.filter(u => u.id !== id);
-            saveAll();
+    function stopBarcodeScanner() {
+        if (html5QrCodeScanner) {
+            html5QrCodeScanner.stop().then(() => {
+                html5QrCodeScanner.clear();
+                document.getElementById('scannerModal').style.display = 'none';
+            }).catch(() => {
+                document.getElementById('scannerModal').style.display = 'none';
+            });
+        } else {
+            document.getElementById('scannerModal').style.display = 'none';
         }
+    }
+
+    // STICKER PRINT
+    function printItemBarcode(code) {
+        const item = inventory.find(i => i.code === code);
+        if (!item) return;
+
+        const p = document.getElementById('printArea');
+        p.innerHTML = `
+            <div style="width: 250px; border: 2px dashed #000; padding: 12px; text-align: center; font-family: sans-serif; margin: auto;">
+                <div style="font-size: 0.85rem; font-weight: bold; margin-bottom: 4px;">${item.name}</div>
+                <svg id="printBarcodeSvg"></svg>
+                <div style="font-size: 0.75rem; margin-top: 4px;">
+                    📍 Loc: <b>${item.location || 'N/A'}</b> | UOM: <b>${item.uom}</b>
+                </div>
+            </div>
+        `;
+        JsBarcode("#printBarcodeSvg", item.code, {
+            format: "CODE128",
+            width: 1.5,
+            height: 40,
+            displayValue: true,
+            fontSize: 12
+        });
+        window.print();
+    }
+
+    // BIN TRANSFER
+    function loadTransferItem() {
+        const code = document.getElementById('tr_code').value.trim();
+        const item = inventory.find(i => i.code.toLowerCase() === code.toLowerCase());
+        const box = document.getElementById('tr_info');
+        if (item) {
+            box.style.display = 'block';
+            document.getElementById('tr_name').innerText = item.name;
+            document.getElementById('tr_from_loc').innerText = item.location || 'Unassigned';
+            document.getElementById('tr_stock').innerText = `${item.stock} ${item.uom}`;
+        } else {
+            box.style.display = 'none';
+        }
+    }
+
+    function applyBinTransfer() {
+        if (!currentUser || currentUser.role === 'Operator') return alert('Operator લોકેશન બદલી શકતા નથી!');
+        const code = document.getElementById('tr_code').value.trim();
+        const toLoc = document.getElementById('tr_to_loc').value.trim();
+        const remark = document.getElementById('tr_remark').value.trim();
+
+        if (!code || !toLoc) return alert('Item Code અને New Location જરૂરી છે!');
+        const item = inventory.find(i => i.code.toLowerCase() === code.toLowerCase());
+        if (!item) return alert('આઇટમ મળી નથી!');
+
+        const fromLoc = item.location || 'N/A';
+        item.location = toLoc;
+
+        const docNo = 'TRF-' + Math.floor(1000 + Math.random() * 9000);
+        transactions.unshift({
+            docNo,
+            date: new Date().toLocaleString(),
+            timestamp: Date.now(),
+            type: 'TRANSFER',
+            code: item.code,
+            name: item.name,
+            qty: item.stock,
+            uom: item.uom,
+            batch: `${fromLoc} ➜ ${toLoc}`,
+            ref: docNo,
+            party: remark || 'Bin Relocation',
+            user: currentUser.name
+        });
+
+        saveAll();
+        alert(`લોકેશન બદલાઈ ગયું: ${fromLoc} થી ${toLoc}`);
+        document.getElementById('tr_code').value = '';
+        document.getElementById('tr_to_loc').value = '';
+        document.getElementById('tr_remark').value = '';
+        document.getElementById('tr_info').style.display = 'none';
     }
 
     // STOCK MASTER
@@ -604,15 +956,19 @@
         let html = '';
         filtered.forEach(item => {
             const isLow = item.stock <= item.min;
+            const itemVal = item.stock * (item.rate || 0);
             html += `
                 <div class="data-row">
                     <div>
                         <strong>${item.name}</strong> (${item.code})<br>
-                        <small style="color:var(--text-muted);">📍 Loc: <b>${item.location || 'N/A'}</b> | Min: ${item.min} ${item.uom}</small>
+                        <small style="color:var(--text-muted);">📍 Loc: <b>${item.location || 'N/A'}</b> | Rate: ₹${item.rate || 0} | Min: ${item.min} ${item.uom}</small>
                         ${isLow ? '<br><span class="alert-badge">⚠️ Low Stock Alert</span>' : ''}
                     </div>
-                    <div style="font-size:1.15rem; font-weight:bold; color:${isLow ? '#ef4444' : '#10b981'}; text-align:right;">
-                        ${item.stock} <small style="font-size:0.8rem; font-weight:normal;">${item.uom}</small>
+                    <div style="text-align:right;">
+                        <div style="font-size:1.15rem; font-weight:bold; color:${isLow ? '#ef4444' : '#10b981'};">
+                            ${item.stock} <small style="font-size:0.75rem; font-weight:normal;">${item.uom}</small>
+                        </div>
+                        <small style="color:#64748b; font-weight:600;">Val: ₹${itemVal.toLocaleString('en-IN')}</small>
                     </div>
                 </div>
             `;
@@ -622,23 +978,25 @@
 
     // ITEM MASTER
     function saveItemMaster() {
-        if (!currentUser || currentUser.role === 'Operator') return alert('Operator આઈટમ માસ્ટર એડિટ કરી શકતા નથી!');
+        if (!currentUser || currentUser.role === 'Operator') return alert('Operator આઈટમ ઉમેરી શકતા નથી!');
         const code = document.getElementById('im_code').value.trim();
         const name = document.getElementById('im_name').value.trim();
         const cat = document.getElementById('im_cat').value;
         const loc = document.getElementById('im_loc').value.trim();
+        const rate = parseFloat(document.getElementById('im_rate').value) || 0;
         const uom = document.getElementById('im_uom').value;
         const min = parseFloat(document.getElementById('im_min').value) || 0;
 
         if (!code || !name) return alert('Item Code અને Item Name જરૂરી છે!');
         if (inventory.find(i => i.code.toLowerCase() === code.toLowerCase())) return alert('આ Item Code પહેલાથી હાજર છે!');
 
-        inventory.push({ code, name, category: cat, location: loc, uom, min, stock: 0 });
+        inventory.push({ code, name, category: cat, location: loc, rate, uom, min, stock: 0 });
         saveAll();
         alert('Item Master successfully save થઈ ગયું!');
         document.getElementById('im_code').value = '';
         document.getElementById('im_name').value = '';
         document.getElementById('im_loc').value = '';
+        document.getElementById('im_rate').value = '';
     }
 
     function renderItemMasterList() {
@@ -650,10 +1008,11 @@
                 <div class="data-row">
                     <div>
                         <strong>${item.name}</strong> (${item.code})<br>
-                        <small style="color:var(--text-muted);">${item.category} | ${item.location || 'N/A'} | ${item.uom}</small>
+                        <small style="color:var(--text-muted);">${item.category} | ${item.location || 'N/A'} | Rate: ₹${item.rate || 0}</small>
                     </div>
-                    <div>
-                        ${currentUser && currentUser.role === 'Admin' ? `<button onclick="deleteItemMaster(${index})" style="color:red; background:none; border:none; font-weight:bold; cursor:pointer;">Delete</button>` : ''}
+                    <div style="display:flex; gap:6px;">
+                        <button onclick="printItemBarcode('${item.code}')" class="btn-header" style="background:#0284c7; color:#fff;">🏷️ Sticker</button>
+                        ${currentUser && currentUser.role === 'Admin' ? `<button onclick="deleteItemMaster(${index})" class="btn-header" style="background:#fee2e2; color:#ef4444;">Delete</button>` : ''}
                     </div>
                 </div>
             `;
@@ -672,7 +1031,10 @@
         const code = document.getElementById(`${p}_code`).value.trim();
         const item = inventory.find(i => i.code.toLowerCase() === code.toLowerCase());
         if (item) {
-            if (p === 'in') document.getElementById('in_name').value = item.name;
+            if (p === 'in') {
+                document.getElementById('in_name').value = item.name;
+                document.getElementById('in_rate').value = item.rate || '';
+            }
             if (p === 'out') document.getElementById('out_cur_stock').value = `${item.stock} ${item.uom}`;
         }
     }
@@ -684,6 +1046,7 @@
         const qty = parseFloat(document.getElementById(isIN ? 'in_qty' : 'out_qty').value);
         const ref = document.getElementById(isIN ? 'in_challan' : 'out_ref').value.trim();
         const party = document.getElementById(isIN ? 'in_vendor' : 'out_dept').value.trim();
+        const batch = document.getElementById(isIN ? 'in_batch' : 'out_batch').value.trim();
 
         if (!code || isNaN(qty) || qty <= 0) return alert('સાચો કોડ અને જથ્થો દાખલ કરો!');
         const item = inventory.find(i => i.code.toLowerCase() === code.toLowerCase());
@@ -691,16 +1054,80 @@
 
         if (!isIN && item.stock < qty) return alert(`સ્ટોક ઓછો છે! હાજર સ્ટોક: ${item.stock}`);
 
+        if (isIN) {
+            const newRate = parseFloat(document.getElementById('in_rate').value);
+            if (!isNaN(newRate) && newRate > 0) item.rate = newRate;
+        }
+
         item.stock = isIN ? (item.stock + qty) : (item.stock - qty);
         const docNo = (isIN ? 'GRN-' : 'ISS-') + Math.floor(1000 + Math.random() * 9000);
-        const rec = { docNo, date: new Date().toLocaleString(), type, code: item.code, name: item.name, qty, ref, party, user: currentUser ? currentUser.name : 'Unknown' };
-        transactions.push(rec);
+        
+        const rec = { 
+            docNo, 
+            date: new Date().toLocaleString(), 
+            timestamp: Date.now(),
+            type, 
+            code: item.code, 
+            name: item.name, 
+            qty, 
+            uom: item.uom,
+            batch: batch || '-',
+            ref, 
+            party, 
+            user: currentUser ? currentUser.name : 'Unknown' 
+        };
+        
+        transactions.unshift(rec);
         saveAll();
 
         if (confirm(`${isIN ? 'GRN' : 'Issue Challan'} સેવ થઈ ગયું! પ્રિન્ટ સ્લિપ કાઢવી છે?`)) {
             printSlip(rec, item);
         }
         document.getElementById(isIN ? 'in_qty' : 'out_qty').value = '';
+        if (document.getElementById(isIN ? 'in_batch' : 'out_batch')) {
+            document.getElementById(isIN ? 'in_batch' : 'out_batch').value = '';
+        }
+    }
+
+    // LEDGER TABLE
+    function renderLedger() {
+        const tbody = document.getElementById('ledgerTableBody');
+        const filterItem = document.getElementById('flt_ledger_item').value;
+        const filterType = document.getElementById('flt_ledger_type').value;
+
+        const fltItemSel = document.getElementById('flt_ledger_item');
+        const prevVal = fltItemSel.value;
+        fltItemSel.innerHTML = '<option value="">All Items</option>' + inventory.map(i => `<option value="${i.code}">${i.name} (${i.code})</option>`).join('');
+        fltItemSel.value = prevVal;
+
+        let filtered = transactions.filter(t => {
+            const mItem = !filterItem || t.code === filterItem;
+            const mType = !filterType || t.type === filterType;
+            return mItem && mType;
+        });
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:18px; color:#64748b;">No transactions recorded.</td></tr>';
+            return;
+        }
+
+        let html = '';
+        filtered.forEach(t => {
+            const badgeColor = t.type === 'IN' ? '#10b981' : (t.type === 'OUT' ? '#ef4444' : '#2563eb');
+            html += `
+                <tr>
+                    <td><b>${t.docNo}</b></td>
+                    <td><span style="font-weight:700; color:${badgeColor};">${t.type}</span></td>
+                    <td style="font-size:0.75rem; color:#64748b;">${t.date}</td>
+                    <td><b>${t.name}</b><br><small style="color:#64748b;">${t.code}</small></td>
+                    <td><span class="tag-badge">${t.batch || '-'}</span></td>
+                    <td><b>${t.qty}</b> ${t.uom || ''}</td>
+                    <td>${t.party || '-'}<br><small style="color:#64748b;">${t.ref || '-'}</small></td>
+                    <td><small>${t.user}</small></td>
+                </tr>
+            `;
+        });
+        tbody.innerHTML = html;
     }
 
     function printSlip(t, item) {
@@ -709,14 +1136,16 @@
             <div style="border:2px solid #000; padding:18px; width:330px; margin:auto; font-family:sans-serif;">
                 <h3 style="text-align:center;">${t.type === 'IN' ? 'GOODS RECEIPT NOTE (GRN)' : 'MATERIAL ISSUE CHALLAN'}</h3>
                 <hr style="margin: 8px 0;">
-                <p style="line-height:1.6; font-size:0.9rem;">
+                <p style="line-height:1.6; font-size:0.88rem;">
                 <b>Doc No:</b> ${t.docNo}<br>
                 <b>Date:</b> ${t.date}<br>
                 <b>Item:</b> ${t.name} (${t.code})<br>
+                <b>Batch/Lot/Drum:</b> ${t.batch || '-'}<br>
                 <b>Qty:</b> ${t.qty} ${item.uom}<br>
                 <b>Location:</b> ${item.location || '-'}<br>
                 <b>Party/Dept:</b> ${t.party || '-'}<br>
-                <b>User:</b> ${t.user}</p>
+                <b>Ref No:</b> ${t.ref || '-'}<br>
+                <b>Issued/Received By:</b> ${t.user}</p>
                 <br><br>
                 <div style="display:flex; justify-content:space-between; font-size:0.85rem;">
                     <span>Store Signature</span>
@@ -753,13 +1182,16 @@
         const diff = actual - item.stock;
         item.stock = actual;
 
-        transactions.push({
+        transactions.unshift({
             docNo: 'AUD-' + Math.floor(1000 + Math.random() * 9000),
             date: new Date().toLocaleString(),
+            timestamp: Date.now(),
             type: 'AUDIT',
             code: item.code,
             name: item.name,
             qty: diff,
+            uom: item.uom,
+            batch: 'Audit Reconcile',
             ref: `Actual: ${actual} (Diff: ${diff})`,
             party: remark || 'Physical Audit',
             user: currentUser.name
@@ -772,7 +1204,54 @@
         document.getElementById('aud_box').style.display = 'none';
     }
 
-    // BACKUP & RESTORE
+    // USER MASTER
+    function saveUserMaster() {
+        if (!currentUser || currentUser.role !== 'Admin') return alert('માત્ર Admin જ નવો યુઝર ઉમેરી શકે!');
+        const name = document.getElementById('u_name').value.trim();
+        const uId = document.getElementById('u_loginid').value.trim();
+        const pwd = document.getElementById('u_password').value.trim();
+        const role = document.getElementById('u_role').value;
+
+        if (!name || !uId || !pwd) return alert('Name, User ID અને Password જરૂરી છે!');
+        if (users.find(u => u.userId.toLowerCase() === uId.toLowerCase())) return alert('આ User ID પહેલાથી હાજર છે!');
+
+        users.push({ id: Date.now(), name, userId: uId, password: pwd, role });
+        saveAll();
+        alert('નવો યુઝર ઉમેરાઈ ગયો!');
+        document.getElementById('u_name').value = '';
+        document.getElementById('u_loginid').value = '';
+        document.getElementById('u_password').value = '';
+    }
+
+    function renderUserList() {
+        const container = document.getElementById('userListContainer');
+        document.getElementById('userCount').innerText = users.length;
+        let html = '';
+        users.forEach(u => {
+            html += `
+                <div class="data-row">
+                    <div>
+                        <strong>${u.name}</strong> <span class="role-pill">${u.role}</span><br>
+                        <small style="color:var(--text-muted);">ID: <b>${u.userId}</b> | Pwd: ***</small>
+                    </div>
+                    <div>
+                        ${u.userId.toLowerCase() !== 'mehul pagi' ? `<button onclick="deleteUser(${u.id})" class="btn-header" style="background:#fee2e2; color:#ef4444;">Delete</button>` : '<small style="color:green; font-weight:bold;">Main Admin</small>'}
+                    </div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+    }
+
+    function deleteUser(id) {
+        if (!currentUser || currentUser.role !== 'Admin') return alert('માત્ર Admin જ ડિલીટ કરી શકે!');
+        if (confirm('આ યુઝરને ડિલીટ કરવો છે?')) {
+            users = users.filter(u => u.id !== id);
+            saveAll();
+        }
+    }
+
+    // BACKUP
     function downloadJSONBackup() {
         const fullBackup = { inventory, users, transactions, backupDate: new Date().toISOString() };
         const blob = new Blob([JSON.stringify(fullBackup, null, 2)], { type: "application/json" });
@@ -794,7 +1273,7 @@
                     if (data.users) users = data.users;
                     if (data.transactions) transactions = data.transactions;
                     saveAll();
-                    alert("Backup successfully restore થઈ ગયું!");
+                    alert("Backup restore થઈ ગયું!");
                 }
             } catch (err) { alert("Error: " + err.message); }
         };
@@ -802,9 +1281,10 @@
     }
 
     function exportToCSV() {
-        let csv = "Item Code,Item Name,Category,Location,UOM,Current Stock,Safety Min Stock\n";
+        let csv = "Item Code,Item Name,Category,Location,Rate,UOM,Current Stock,Safety Min Stock,Total Valuation\n";
         inventory.forEach(i => {
-            csv += `"${i.code}","${i.name}","${i.category || ''}","${i.location || ''}","${i.uom}",${i.stock},${i.min}\n`;
+            const val = i.stock * (i.rate || 0);
+            csv += `"${i.code}","${i.name}","${i.category || ''}","${i.location || ''}",${i.rate || 0},"${i.uom}",${i.stock},${i.min},${val}\n`;
         });
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement("a");
@@ -813,9 +1293,20 @@
         link.click();
     }
 
+    // INITIAL LOAD
+    if (GOOGLE_SCRIPT_URL) {
+        document.getElementById('cfg_cloud_url').value = GOOGLE_SCRIPT_URL;
+        fetchCloudData();
+    }
     checkLoginStatus();
+    updateDashboardKPI();
     renderStockMaster();
     renderItemMasterList();
+
+    // Auto sync every 30 seconds
+    setInterval(() => {
+        if (GOOGLE_SCRIPT_URL) fetchCloudData();
+    }, 30000);
 </script>
 
 </body>
