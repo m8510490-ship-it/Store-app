@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Enterprise Store ERP System - 50 Roles Edition</title>
-    <!-- Barcode Generation & Camera QR/Barcode Scanner -->
+    <title>Enterprise Store ERP - Dynamic Admin Rights</title>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
@@ -223,6 +222,26 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
+        /* Permission Matrix Styling */
+        .perm-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 8px;
+            background: #f8fafc;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 8px;
+            border: 1px solid var(--border-color);
+        }
+        .perm-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .perm-item input { width: auto; }
+
         #scannerModal {
             display: none;
             position: fixed;
@@ -288,7 +307,7 @@
 </div>
 
 <header>
-    <div class="brand-title">📦 Store ERP System - Enterprise 50</div>
+    <div class="brand-title">📦 Store ERP System - Dynamic Rights</div>
     <div style="display: flex; gap: 8px;">
         <button onclick="fetchCloudData()" class="btn-header" style="background:#0284c7; color:#fff;">🔄 Sync</button>
         <button onclick="downloadReorderIndent()" class="btn-header" style="background:#f59e0b; color:#fff;">📑 Indent</button>
@@ -313,7 +332,7 @@
     <button class="tab-btn" id="tabbtn_item_master" onclick="switchTab(event, 'item_master')">⚙️ Item Master</button>
     <button class="tab-btn" id="tabbtn_audit" onclick="switchTab(event, 'audit')">📝 Stock Audit</button>
     <button class="tab-btn" id="tabbtn_backup_manager" onclick="switchTab(event, 'backup_manager')">💾 Cloud & Import</button>
-    <button class="tab-btn" id="tabbtn_user_master" onclick="switchTab(event, 'user_master')">👥 User Master (50 Roles)</button>
+    <button class="tab-btn" id="tabbtn_user_master" onclick="switchTab(event, 'user_master')">👥 Rights & Users</button>
 </div>
 
 <div class="container">
@@ -645,10 +664,42 @@
         </div>
     </div>
 
-    <!-- 10. USER MASTER (50 ROLES INCLUDED) -->
+    <!-- 10. USER MASTER & DYNAMIC ROLE RIGHTS CONTROL -->
     <div id="tab-user_master" class="tab-content">
+        
+        <!-- ADMIN ONLY: ROLE PERMISSION ASSIGNMENT PANEL -->
+        <div class="card" id="adminRightsControlCard" style="border: 2px solid var(--primary-accent);">
+            <div class="card-title">
+                <span>🛡️ Admin Master Rights Control (કયા રોલને શું અધિકાર આપવો)</span>
+            </div>
+            <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:12px;">
+                રોલ પસંદ કરો અને તેને કયા કયા ટેબ્સ આપવા છે તે ચેકબોક્સ દ્વારા ચાલુ/બંધ કરીને સેવ કરો:
+            </p>
+            <div class="form-group">
+                <label>Select Role to Edit Permissions:</label>
+                <select id="sel_role_to_config" onchange="loadRolePermissionsToUI()">
+                    <!-- Auto populated from roles -->
+                </select>
+            </div>
+
+            <label style="margin-top:10px;">આ રોલ માટે માન્ય ટેબ્સ (Check to Allow):</label>
+            <div class="perm-grid">
+                <label class="perm-item"><input type="checkbox" id="chk_p_stock_master"> 📊 Stock Master</label>
+                <label class="perm-item"><input type="checkbox" id="chk_p_inward"> 📥 Inward & QC</label>
+                <label class="perm-item"><input type="checkbox" id="chk_p_outward"> 📤 Outward (Issue)</label>
+                <label class="perm-item"><input type="checkbox" id="chk_p_gate_pass"> 🚛 Gate Pass</label>
+                <label class="perm-item"><input type="checkbox" id="chk_p_transfer"> 🔄 Bin Transfer</label>
+                <label class="perm-item"><input type="checkbox" id="chk_p_transactions_log"> 📜 Ledger</label>
+                <label class="perm-item"><input type="checkbox" id="chk_p_item_master"> ⚙️ Item Master</label>
+                <label class="perm-item"><input type="checkbox" id="chk_p_audit"> 📝 Stock Audit</label>
+                <label class="perm-item"><input type="checkbox" id="chk_p_backup_manager"> 💾 Cloud & Backup</label>
+            </div>
+            <button class="btn btn-primary" style="margin-top:12px;" onclick="saveConfiguredRolePermissions()">💾 Save This Role's Rights</button>
+        </div>
+
+        <!-- NEW USER REGISTRATION -->
         <div class="card">
-            <div class="card-title">👥 Register New User (50 Enterprise Roles)</div>
+            <div class="card-title">👥 Register New User</div>
             <div class="form-group">
                 <label>Full Name:</label>
                 <input type="text" id="u_name" placeholder="e.g. Employee Name">
@@ -662,78 +713,9 @@
                 <input type="password" id="u_password" placeholder="Password set કરો">
             </div>
             <div class="form-group">
-                <label>User Role (Select from 50 Roles):</label>
+                <label>Assign Role:</label>
                 <select id="u_role">
-                    <optgroup label="--- Store & Warehouse Operations ---">
-                        <option value="Store Executive">1. Store Executive</option>
-                        <option value="Store Supervisor">2. Store Supervisor</option>
-                        <option value="Store Assistant">3. Store Assistant</option>
-                        <option value="Warehouse Manager">4. Warehouse Manager</option>
-                        <option value="Raw Material Store Incharge">5. Raw Material Store Incharge</option>
-                        <option value="Finished Goods Store Incharge">6. Finished Goods Store Incharge</option>
-                        <option value="Packing Material Storekeeper">7. Packing Material Storekeeper</option>
-                        <option value="Spares & Consumables Keeper">8. Spares & Consumables Keeper</option>
-                        <option value="Scrap & Rejection Store Incharge">9. Scrap & Rejection Store Incharge</option>
-                        <option value="Bin & Rack Controller">10. Bin & Rack Controller</option>
-                    </optgroup>
-                    <optgroup label="--- Inward & Material Unloading ---">
-                        <option value="Unloading Supervisor">11. Unloading Supervisor</option>
-                        <option value="Material Verification Officer">12. Material Verification Officer</option>
-                        <option value="GRN Operator">13. GRN Operator</option>
-                        <option value="Forklift Operator">14. Forklift Operator</option>
-                        <option value="Dock Controller">15. Dock Controller</option>
-                    </optgroup>
-                    <optgroup label="--- Quality Control & Inspection ---">
-                        <option value="QC Inspector">16. QC Inspector</option>
-                        <option value="QC Supervisor">17. QC Supervisor</option>
-                        <option value="IQC Engineer">18. IQC Engineer</option>
-                        <option value="RTV Officer">19. RTV Officer</option>
-                        <option value="Quarantine Area Incharge">20. Quarantine Area Incharge</option>
-                    </optgroup>
-                    <optgroup label="--- Outward, Dispatch & Logistics ---">
-                        <option value="Dispatch Supervisor">21. Dispatch Supervisor</option>
-                        <option value="Picking & Packing Executive">22. Picking & Packing Executive</option>
-                        <option value="Loading Supervisor">23. Loading Supervisor</option>
-                        <option value="Gate Pass Officer">24. Gate Pass Officer</option>
-                        <option value="Logistics Coordinator">25. Logistics Coordinator</option>
-                        <option value="Export Dispatch Handler">26. Export Dispatch Handler</option>
-                    </optgroup>
-                    <optgroup label="--- Audit & Physical Verification ---">
-                        <option value="Stock Auditor">27. Stock Auditor</option>
-                        <option value="Cycle Counter">28. Cycle Counter</option>
-                        <option value="Inventory Controller">29. Inventory Controller</option>
-                        <option value="Reconciliation Officer">30. Reconciliation Officer</option>
-                    </optgroup>
-                    <optgroup label="--- Security & Gate Control ---">
-                        <option value="Security Officer">31. Security Officer</option>
-                        <option value="Weighbridge Operator">32. Weighbridge Operator</option>
-                        <option value="Security Incharge">33. Security Incharge</option>
-                    </optgroup>
-                    <optgroup label="--- Production & Shop Floor ---">
-                        <option value="Line-1 Production Supervisor">34. Line-1 Production Supervisor</option>
-                        <option value="Line-2 Production Supervisor">35. Line-2 Production Supervisor</option>
-                        <option value="Maintenance Supervisor">36. Maintenance Supervisor</option>
-                        <option value="Shop Floor Material Handler">37. Shop Floor Material Handler</option>
-                        <option value="Rework Supervisor">38. Rework Supervisor</option>
-                        <option value="Project Site Store Incharge">39. Project Site Store Incharge</option>
-                    </optgroup>
-                    <optgroup label="--- Purchase & Procurement ---">
-                        <option value="Purchase Executive">40. Purchase Executive</option>
-                        <option value="Procurement Manager">41. Procurement Manager</option>
-                        <option value="Vendor Follow-up Officer">42. Vendor Follow-up Officer</option>
-                        <option value="Supply Chain Analyst">43. Supply Chain Analyst</option>
-                    </optgroup>
-                    <optgroup label="--- Accounts & Commercial ---">
-                        <option value="Store Accounts Officer">44. Store Accounts Officer</option>
-                        <option value="Bill Booking Clerk">45. Bill Booking Clerk</option>
-                        <option value="Auditor / Viewer">46. Auditor / Viewer (Read-Only)</option>
-                    </optgroup>
-                    <optgroup label="--- IT & Administration ---">
-                        <option value="Plant Admin">47. Plant Admin</option>
-                        <option value="ERP IT Administrator">48. ERP IT Administrator</option>
-                        <option value="User Access Controller">49. User Access Controller</option>
-                        <option value="Admin">50. Admin (Full System Head)</option>
-                    </optgroup>
+                    <!-- Populated dynamically -->
                 </select>
             </div>
             <button class="btn btn-primary" onclick="saveUserMaster()">Save User</button>
@@ -752,6 +734,34 @@
 <script>
     let GOOGLE_SCRIPT_URL = localStorage.getItem('erp_cloud_url') || "";
 
+    const ALL_AVAILABLE_ROLES = [
+        "Store Executive", "Store Supervisor", "Store Assistant", "Warehouse Manager", 
+        "Raw Material Store Incharge", "Finished Goods Store Incharge", "Packing Material Storekeeper", 
+        "Spares & Consumables Keeper", "Scrap & Rejection Store Incharge", "Bin & Rack Controller",
+        "Unloading Supervisor", "Material Verification Officer", "GRN Operator", "Forklift Operator", 
+        "Dock Controller", "QC Inspector", "QC Supervisor", "IQC Engineer", "RTV Officer", 
+        "Quarantine Area Incharge", "Dispatch Supervisor", "Picking & Packing Executive", 
+        "Loading Supervisor", "Gate Pass Officer", "Logistics Coordinator", "Export Dispatch Handler",
+        "Stock Auditor", "Cycle Counter", "Inventory Controller", "Reconciliation Officer",
+        "Security Officer", "Weighbridge Operator", "Security Incharge", "Line-1 Production Supervisor", 
+        "Line-2 Production Supervisor", "Maintenance Supervisor", "Shop Floor Material Handler", 
+        "Rework Supervisor", "Project Site Store Incharge", "Purchase Executive", "Procurement Manager", 
+        "Vendor Follow-up Officer", "Supply Chain Analyst", "Store Accounts Officer", "Bill Booking Clerk", 
+        "Auditor / Viewer", "Plant Admin", "ERP IT Administrator", "User Access Controller", "Operator"
+    ];
+
+    // Default Dynamic Rights Matrix
+    const defaultRoleRights = {
+        "Admin": ["stock_master", "inward", "outward", "gate_pass", "transfer", "transactions_log", "item_master", "audit", "backup_manager", "user_master"],
+        "Store Supervisor": ["stock_master", "inward", "outward", "gate_pass", "transfer", "transactions_log", "item_master", "audit"],
+        "Store Executive": ["stock_master", "inward", "outward", "gate_pass", "transfer", "transactions_log"],
+        "Store Assistant": ["stock_master", "inward", "outward"],
+        "Operator": ["stock_master", "inward", "outward"],
+        "QC Inspector": ["stock_master", "inward", "transactions_log"],
+        "Security Officer": ["gate_pass", "transactions_log"],
+        "Auditor / Viewer": ["stock_master", "transactions_log"]
+    };
+
     const defaultItems = [
         { code: "ITM-001", name: "Solar DC Cable 4 sq mm", category: "Raw Material", location: "Rack-A1", uom: "MTR", min: 100, stock: 500, rate: 35 },
         { code: "ITM-002", name: "MC4 Connectors Male/Female", category: "Raw Material", location: "Bin-B2", uom: "SET", min: 50, stock: 40, rate: 22 },
@@ -763,16 +773,28 @@
         { id: 2, name: "Store Supervisor", userId: "super", password: "123", role: "Store Supervisor" },
         { id: 3, name: "Store Operator", userId: "oper", password: "123", role: "Store Assistant" },
         { id: 4, name: "QC Chemist", userId: "qc01", password: "123", role: "QC Inspector" },
-        { id: 5, name: "Main Gate Security", userId: "sec01", password: "123", role: "Security Officer" },
-        { id: 6, name: "Internal Auditor", userId: "audit01", password: "123", role: "Auditor / Viewer" }
+        { id: 5, name: "Main Gate Security", userId: "sec01", password: "123", role: "Security Officer" }
     ];
 
     let inventory = JSON.parse(localStorage.getItem('erp_final_items')) || defaultItems;
     let users = JSON.parse(localStorage.getItem('erp_final_users')) || defaultUsers;
+    let roleRights = JSON.parse(localStorage.getItem('erp_custom_role_rights')) || defaultRoleRights;
     let transactions = JSON.parse(localStorage.getItem('erp_final_txns')) || [];
     let currentUser = JSON.parse(localStorage.getItem('erp_logged_user')) || null;
     let html5QrCodeScanner = null;
     let activeScannerTargetInput = null;
+
+    function populateRoleDropdowns() {
+        const uRoleSel = document.getElementById('u_role');
+        const cfgRoleSel = document.getElementById('sel_role_to_config');
+        
+        let optHtml = '';
+        ALL_AVAILABLE_ROLES.forEach(r => {
+            optHtml += `<option value="${r}">${r}</option>`;
+        });
+        uRoleSel.innerHTML = optHtml;
+        cfgRoleSel.innerHTML = optHtml;
+    }
 
     function setSyncStatus(status, text) {
         const dot = document.getElementById('syncDot');
@@ -789,7 +811,7 @@
         }
 
         setSyncStatus('syncing', 'Syncing to Google Cloud...');
-        const payload = { inventory, users, transactions, lastUpdated: new Date().toISOString() };
+        const payload = { inventory, users, roleRights, transactions, lastUpdated: new Date().toISOString() };
 
         try {
             await fetch(GOOGLE_SCRIPT_URL, {
@@ -813,15 +835,18 @@
             if (data && data.inventory) {
                 inventory = data.inventory;
                 if (data.users) users = data.users;
+                if (data.roleRights) roleRights = data.roleRights;
                 if (data.transactions) transactions = data.transactions;
                 localStorage.setItem('erp_final_items', JSON.stringify(inventory));
                 localStorage.setItem('erp_final_users', JSON.stringify(users));
+                localStorage.setItem('erp_custom_role_rights', JSON.stringify(roleRights));
                 localStorage.setItem('erp_final_txns', JSON.stringify(transactions));
                 updateDashboardKPI();
                 renderStockMaster();
                 renderItemMasterList();
                 renderUserList();
                 renderLedger();
+                applyRolePermissions();
                 setSyncStatus('', 'Cloud Synced: Up to date');
             }
         } catch (err) {
@@ -841,6 +866,7 @@
     function saveAll() {
         localStorage.setItem('erp_final_items', JSON.stringify(inventory));
         localStorage.setItem('erp_final_users', JSON.stringify(users));
+        localStorage.setItem('erp_custom_role_rights', JSON.stringify(roleRights));
         localStorage.setItem('erp_final_txns', JSON.stringify(transactions));
         updateDashboardKPI();
         renderStockMaster();
@@ -848,6 +874,67 @@
         renderUserList();
         renderLedger();
         pushToCloud();
+    }
+
+    // DYNAMIC ROLE PERMISSIONS LOGIC
+    function loadRolePermissionsToUI() {
+        const r = document.getElementById('sel_role_to_config').value;
+        const currentAllowed = roleRights[r] || ["stock_master"];
+
+        const allCheckboxes = ['stock_master', 'inward', 'outward', 'gate_pass', 'transfer', 'transactions_log', 'item_master', 'audit', 'backup_manager'];
+        allCheckboxes.forEach(tab => {
+            const el = document.getElementById(`chk_p_${tab}`);
+            if (el) el.checked = currentAllowed.includes(tab);
+        });
+    }
+
+    function saveConfiguredRolePermissions() {
+        if (!currentUser || currentUser.role !== 'Admin') return alert('માત્ર Admin જ રોલના રાઇટ્સ બદલી શકે!');
+        const r = document.getElementById('sel_role_to_config').value;
+        const allCheckboxes = ['stock_master', 'inward', 'outward', 'gate_pass', 'transfer', 'transactions_log', 'item_master', 'audit', 'backup_manager'];
+
+        const selectedTabs = [];
+        allCheckboxes.forEach(tab => {
+            const el = document.getElementById(`chk_p_${tab}`);
+            if (el && el.checked) selectedTabs.push(tab);
+        });
+
+        roleRights[r] = selectedTabs;
+        saveAll();
+        alert(`સફળતા! '${r}' રોલ માટેના રાઇટ્સ સેવ થઈ ગયા છે.`);
+        applyRolePermissions();
+    }
+
+    function applyRolePermissions() {
+        if (!currentUser) return;
+        const r = currentUser.role || 'Operator';
+
+        let allowed = [];
+        if (r === 'Admin') {
+            allowed = ['stock_master', 'inward', 'outward', 'gate_pass', 'transfer', 'transactions_log', 'item_master', 'audit', 'backup_manager', 'user_master'];
+            document.getElementById('adminRightsControlCard').style.display = 'block';
+        } else {
+            allowed = roleRights[r] || ['stock_master', 'inward', 'outward'];
+            document.getElementById('adminRightsControlCard').style.display = 'none';
+        }
+
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            const tabId = btn.id.replace('tabbtn_', '');
+            if (allowed.includes(tabId)) {
+                btn.style.display = 'block';
+            } else {
+                btn.style.display = 'none';
+            }
+        });
+
+        const activeBtn = document.querySelector('.tab-btn.active');
+        if (!activeBtn || activeBtn.style.display === 'none') {
+            const firstTab = allowed[0];
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(`tab-${firstTab}`).classList.add('active');
+            document.getElementById(`tabbtn_${firstTab}`).classList.add('active');
+        }
     }
 
     function updateDashboardKPI() {
@@ -865,75 +952,6 @@
         document.getElementById('kpi_today_activity').innerText = `${inCount} In / ${outCount} Out`;
     }
 
-    // 50 ROLES ACCESS MATRIX LOGIC
-    function applyRolePermissions() {
-        if (!currentUser) return;
-        const r = currentUser.role || 'Operator';
-
-        // 1. Admin Level Roles (Full Access)
-        const adminRoles = ['Admin', 'Plant Admin', 'ERP IT Administrator', 'User Access Controller'];
-
-        // 2. Supervisory & Store Incharge Roles
-        const supervisorRoles = [
-            'Store Executive', 'Store Supervisor', 'Warehouse Manager', 'Raw Material Store Incharge',
-            'Finished Goods Store Incharge', 'Packing Material Storekeeper', 'Spares & Consumables Keeper',
-            'Scrap & Rejection Store Incharge', 'Bin & Rack Controller', 'Inventory Controller',
-            'Reconciliation Officer', 'Master Data Admin', 'Project Site Store Incharge'
-        ];
-
-        // 3. Inward & Quality Roles
-        const inwardQcRoles = [
-            'Unloading Supervisor', 'Material Verification Officer', 'GRN Operator', 'Dock Controller',
-            'QC Inspector', 'QC Supervisor', 'IQC Engineer', 'RTV Officer', 'Quarantine Area Incharge'
-        ];
-
-        // 4. Dispatch & Gate Operations
-        const dispatchGateRoles = [
-            'Dispatch Supervisor', 'Picking & Packing Executive', 'Loading Supervisor',
-            'Gate Pass Officer', 'Logistics Coordinator', 'Export Dispatch Handler',
-            'Security Officer', 'Weighbridge Operator', 'Security Incharge'
-        ];
-
-        // 5. Audit & Viewer Roles
-        const auditViewerRoles = [
-            'Stock Auditor', 'Cycle Counter', 'Store Accounts Officer', 'Bill Booking Clerk',
-            'Auditor / Viewer', 'Purchase Executive', 'Procurement Manager', 'Vendor Follow-up Officer',
-            'Supply Chain Analyst'
-        ];
-
-        let allowed = ['stock_master'];
-
-        if (adminRoles.includes(r)) {
-            allowed = ['stock_master', 'inward', 'outward', 'gate_pass', 'transfer', 'transactions_log', 'item_master', 'audit', 'backup_manager', 'user_master'];
-        } else if (supervisorRoles.includes(r)) {
-            allowed = ['stock_master', 'inward', 'outward', 'gate_pass', 'transfer', 'transactions_log', 'item_master', 'audit'];
-        } else if (inwardQcRoles.includes(r)) {
-            allowed = ['stock_master', 'inward', 'transactions_log'];
-        } else if (dispatchGateRoles.includes(r)) {
-            allowed = ['stock_master', 'outward', 'gate_pass', 'transactions_log'];
-        } else if (auditViewerRoles.includes(r)) {
-            allowed = ['stock_master', 'transactions_log', 'audit'];
-        } else {
-            // General Operators, Handlers & Helpers
-            allowed = ['stock_master', 'inward', 'outward'];
-        }
-
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            const tabId = btn.id.replace('tabbtn_', '');
-            if (allowed.includes(tabId)) {
-                btn.style.display = 'block';
-            } else {
-                btn.style.display = 'none';
-            }
-        });
-
-        const firstTab = allowed[0];
-        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-        document.getElementById(`tab-${firstTab}`).classList.add('active');
-        document.getElementById(`tabbtn_${firstTab}`).classList.add('active');
-    }
-
     function checkLoginStatus() {
         if (currentUser) {
             document.getElementById('loginScreen').style.display = 'none';
@@ -941,6 +959,7 @@
             document.getElementById('lblCurRole').innerText = currentUser.role;
             document.getElementById('lblCurId').innerText = "ID: " + (currentUser.userId || "guest");
             applyRolePermissions();
+            loadRolePermissionsToUI();
         } else {
             document.getElementById('loginScreen').style.display = 'flex';
             document.getElementById('login_userid').value = '';
@@ -958,7 +977,7 @@
             currentUser = { id: 1, name: "Mehul Pagi", userId: "Mehul Pagi", role: "Admin" };
             localStorage.setItem('erp_logged_user', JSON.stringify(currentUser));
             checkLoginStatus();
-            alert("સ્વાગત છે, Mehul Pagi! (Admin Mode)");
+            alert("સ્વાગત છે, Mehul Pagi! (Admin Mode - Full Rights Enabled)");
             return;
         }
 
@@ -1275,6 +1294,7 @@
 
     // BULK CSV IMPORT
     function importBulkCSV() {
+        if (currentUser.role !== 'Admin') return alert('માત્ર Admin જ Bulk Import કરી શકે!');
         const fileInput = document.getElementById('csvBulkInput');
         if (!fileInput.files || fileInput.files.length === 0) return alert('કૃપા કરીને CSV ફાઈલ પસંદ કરો!');
 
@@ -1558,6 +1578,7 @@
 
     // USER MASTER
     function saveUserMaster() {
+        if (!currentUser || currentUser.role !== 'Admin') return alert('માત્ર Admin જ નવો યુઝર ઉમેરી શકે!');
         const name = document.getElementById('u_name').value.trim();
         const uId = document.getElementById('u_loginid').value.trim();
         const pwd = document.getElementById('u_password').value.trim();
@@ -1595,6 +1616,7 @@
     }
 
     function deleteUser(id) {
+        if (!currentUser || currentUser.role !== 'Admin') return alert('માત્ર Admin જ યુઝર ડીલીટ કરી શકે!');
         if (confirm('આ યુઝરને ડિલીટ કરવો છે?')) {
             users = users.filter(u => u.id !== id);
             saveAll();
@@ -1603,7 +1625,7 @@
 
     // BACKUP & CSV EXPORT
     function downloadJSONBackup() {
-        const fullBackup = { inventory, users, transactions, backupDate: new Date().toISOString() };
+        const fullBackup = { inventory, users, roleRights, transactions, backupDate: new Date().toISOString() };
         const blob = new Blob([JSON.stringify(fullBackup, null, 2)], { type: "application/json" });
         const a = document.createElement("a");
         a.href = URL.createObjectURL(blob);
@@ -1621,6 +1643,7 @@
                 if (data.inventory && Array.isArray(data.inventory)) {
                     inventory = data.inventory;
                     if (data.users) users = data.users;
+                    if (data.roleRights) roleRights = data.roleRights;
                     if (data.transactions) transactions = data.transactions;
                     saveAll();
                     alert("Backup restore થઈ ગયું!");
@@ -1644,6 +1667,7 @@
     }
 
     // STARTUP
+    populateRoleDropdowns();
     if (GOOGLE_SCRIPT_URL) {
         document.getElementById('cfg_cloud_url').value = GOOGLE_SCRIPT_URL;
         fetchCloudData();
